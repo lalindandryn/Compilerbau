@@ -1,0 +1,37 @@
+//
+// test4.spl -- Aufgabenblatt 2, Testprogramm d)
+//
+
+
+proc fak1(n: int, ref m: int) {
+  m := 1;
+  while (n # 0) {
+    m := m * n;
+    n := n - 1;
+  }
+}
+
+
+proc fak2(n: int, ref m: int) {
+  if (n = 0) {
+    m := 1;
+  } else {
+    fak2(n - 1, m);
+    m := n * m;
+  }
+}
+
+
+proc main() {
+  var n: int;
+  var m: int;
+
+  //readi(n);
+  n := 10;
+  fak1(n, m);
+  printi(m);
+  printc('\n');
+  fak2(n, m);
+  printi(m);
+  printc('\n');
+}

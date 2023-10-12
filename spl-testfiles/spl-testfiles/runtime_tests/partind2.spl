@@ -1,0 +1,60 @@
+//
+// partly indexed array
+//
+
+type A = array[7] of int;
+type B = array[5] of A;
+type C = array[3] of B;
+
+proc p(ref x: B) {
+  var i: int;
+  var j: int;
+
+  i := 0;
+  while (i < 5) {
+    j := 0;
+    while (j < 7) {
+      if (i = j) x[i][j] := i + j;
+      j := j + 1;
+    }
+    i := i + 1;
+  }
+}
+
+proc main() {
+  var c: C;
+  var i: int;
+  var j: int;
+  var k: int;
+
+  i := 0;
+  while (i < 3) {
+    j := 0;
+    while (j < 5) {
+      k := 0;
+      while (k < 7) {
+        c[i][j][k] := 0;
+        k := k + 1;
+      }
+      j := j + 1;
+    }
+    i := i + 1;
+  }
+  p(c[1]);
+  i := 0;
+  while (i < 3) {
+    j := 0;
+    while (j < 5) {
+      k := 0;
+      while (k < 7) {
+        printi(c[i][j][k]);
+        printc(' ');
+        k := k + 1;
+      }
+      printc('\n');
+      j := j + 1;
+    }
+    printc('\n');
+    i := i + 1;
+  }
+}

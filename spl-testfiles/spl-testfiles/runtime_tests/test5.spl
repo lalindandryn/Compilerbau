@@ -1,0 +1,14 @@
+//
+// test5.spl -- just enough registers
+//
+
+
+proc main() {
+  var i: int;
+
+  i := 2;
+  i := i + (i + (i + (i + (i + (i + (i + (i + (i +
+       (i + (i + (i + (i + (i + i)))))))))))));
+  printi(i);
+  printc('\n');
+}

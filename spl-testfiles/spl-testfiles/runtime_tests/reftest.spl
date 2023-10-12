@@ -1,0 +1,12 @@
+//
+// non-var as ref param
+//
+
+proc p(ref x: int) {
+}
+
+proc main() {
+  var a: int;
+
+  p(a + 1);
+}

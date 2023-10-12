@@ -1,0 +1,37 @@
+//
+// twodim.spl -- indexing in a two-dimensional array
+//
+
+
+type A = array [5] of array [5] of int;
+
+
+proc main() {
+  var a: A;
+  var i: int;
+  var j: int;
+
+  i := 0;
+  while (i < 5) {
+    j := 0;
+    while (j < 5) {
+      if (i = j) {
+        a[i][j] := 1;
+      } else {
+        a[i][j] := 0;
+      }
+      j := j + 1;
+    }
+    i := i + 1;
+  }
+  i := 0;
+  while (i < 5) {
+    j := 0;
+    while (j < 5) {
+      printi(a[i][j]);
+      j := j + 1;
+    }
+    printc('\n');
+    i := i + 1;
+  }
+}

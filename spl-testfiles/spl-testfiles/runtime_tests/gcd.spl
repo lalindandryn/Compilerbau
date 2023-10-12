@@ -1,0 +1,32 @@
+//
+// gcd.spl
+//
+
+
+proc main() {
+  var a: int;
+  var b: int;
+  var c: int;
+
+  a := 10164;
+  b := 2646;
+  gcd(a, b, c);
+  printi(a);
+  printc(' ');
+  printi(b);
+  printc(' ');
+  printi(c);
+  printc('\n');
+}
+
+
+proc gcd(a: int, b: int, ref r: int) {
+  while (a # b) {
+    if (a < b) {
+      b := b - a;
+    } else {
+      a := a - b;
+    }
+  }
+  r := a;
+}

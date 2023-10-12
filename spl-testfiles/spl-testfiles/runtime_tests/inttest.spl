@@ -1,0 +1,27 @@
+//
+// inttest.spl
+// Author: Uwe Meyer
+// Testen der verschiedenen INTLIT-Typen
+//
+
+proc main() {
+   
+   var i1 : int;
+   var i2 : int;
+   var i3 : int;
+   var i4 : int;
+
+
+   i1 := 1234567;
+   i2 := 0x74CBB1;
+   i3 := 'a';
+   i4 := ''';
+
+   printi(i1); printc(' ');
+   printi(i2); printc(' ');
+   printi(i3); printc(' ');
+   printi(i4); printc(' ');
+   printi('\'); printc(' ');
+   printi('\n'); printc(' ');
+   printc('\n');
+}

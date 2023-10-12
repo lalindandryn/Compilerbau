@@ -1,0 +1,48 @@
+//
+// value_semantics.spl -- test for bonus assignment 'value semantics'
+//
+
+proc print_array(a: array[3] of int) {
+    var i: int;
+    i := 0;
+    while (i < 3) {
+        printi(a[i]);
+        printc(' ');
+        i := i + 1;
+    }
+    printc('\n');
+}
+
+proc equal(holder: record { a: array[3] of int, b: array[3] of int }, ref result: int) {
+    var i: int;
+
+    result := 1;
+    i := 0;
+    while (i < 3) {
+        if (holder.a[i] # holder.b[i]) {
+            result := 0;
+        }
+        i := i + 1;
+    } 
+}
+
+proc main() {
+    var a: array[3] of int;
+    var b: array[3] of int;
+    var holder: record { a: array[3] of int, b: array[3] of int };
+    var equaL_result: int;
+
+    a[0] := 1;
+    a[1] := 2;
+    a[2] := 3;
+
+    b := a;
+
+    print_array(b);
+
+    holder.a := a;
+    holder.b := b;
+    equal(holder, equaL_result);
+    printi(equaL_result);
+    printc('\n');
+}

@@ -1,0 +1,25 @@
+//
+// time.spl -- continuously show time
+//
+
+
+proc main() {
+  var s: int;
+  var t: int;
+
+  s := 0;
+  while (s < 10) {
+    time(t);
+    if (s # t) {
+      printc('t');
+      printc('i');
+      printc('m');
+      printc('e');
+      printc(':');
+      printc(' ');
+      printi(t);
+      printc('\n');
+      s := t;
+    }
+  }
+}

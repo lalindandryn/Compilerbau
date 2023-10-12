@@ -1,0 +1,16 @@
+//
+// test9.spl -- array boundary check failure
+//
+
+
+proc main() {
+  var a: array [3] of int;
+
+  a[0] := 10;
+  a[1] := 11;
+  a[2] := 12;
+  a[3] := 13;
+  printc('o');
+  printc('k');
+  printc('\n');
+}

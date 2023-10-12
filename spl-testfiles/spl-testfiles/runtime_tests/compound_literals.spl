@@ -1,0 +1,23 @@
+//
+// compound_literals.spl -- test for bonus assignment 'compound literals'
+//
+
+type Record = record {
+    x: int,
+    y: int
+};
+
+type Array = array[3] of Record; 
+
+proc main() {
+    var t: Array;
+
+    t := array { record {1, 2}, record {3, 4}, record {5, 6} };
+
+    printc('(');
+    printi(t[1].x);
+    printc('|');
+    printi(t[1].y);
+    printc(')');
+    printc('\n');
+}

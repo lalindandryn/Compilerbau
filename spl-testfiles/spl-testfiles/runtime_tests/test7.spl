@@ -1,0 +1,15 @@
+//
+// test7.spl -- array boundary check ok
+//
+
+
+proc main() {
+  var a: array [3] of int;
+
+  a[0] := 10;
+  a[1] := 11;
+  a[2] := 12;
+  printc('o');
+  printc('k');
+  printc('\n');
+}

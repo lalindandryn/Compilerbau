@@ -1,0 +1,6 @@
+// Unary plus is not allowed in spl
+
+proc main() {
+    var x: int;
+    x := +5;
+}

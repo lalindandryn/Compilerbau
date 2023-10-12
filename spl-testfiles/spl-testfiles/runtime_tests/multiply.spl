@@ -1,0 +1,30 @@
+//
+// 1mal1.spl
+// Author: Norman Ulbrich
+// Ausgabe des 1x1 bis n
+//
+
+proc main() {
+	var i : int;
+	var j : int;
+	var n : int;
+
+	n:=10
+	;
+
+	i:= 0;
+	while (i <= n) {
+		j := 0;
+		while (j <= n) {
+			if (i*j < 10) printc(' ');
+			printi(i*j);
+			printc(' ');
+			printc(' ');
+			j
+			:= j
+			+1;
+		}
+		printc('\n');
+		i := i + 1;
+	}
+}

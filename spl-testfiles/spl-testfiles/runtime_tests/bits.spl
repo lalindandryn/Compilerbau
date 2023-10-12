@@ -1,0 +1,28 @@
+//
+// bitmuster.spl
+// Author: Norman Ulbrich
+// Berechnen des Bitmusters einer Zahl (32 bit)
+//
+
+proc main() {
+	var arr : array[32] of int;
+	var eing : int;
+	var i : int;
+
+	eing := 123456789;	
+
+	i := 0;
+	while (i < 32) {
+		arr[i] := eing - ((eing / 2) * 2);
+		eing := eing / 2;
+		i := i+1;
+	}
+
+	i := 31;
+	while (i >= 0) {
+		printi(arr[i]);
+		i := i-1;
+		if (i - (i / 4) * 4 = 3) printc(' ');
+	}
+	printc('\n');
+}

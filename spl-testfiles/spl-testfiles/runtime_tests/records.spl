@@ -1,0 +1,59 @@
+//
+// records.spl -- test for bonus assignment 'records'
+//
+
+type Point = record {
+    x: int,
+    y: int
+};
+
+type Vector = record {
+    id: int,
+    points: array[3] of Point
+};
+
+proc add(ref p1: Point, ref p2: Point, ref result: Point) {
+    result.x := p1.x + p2.x;
+    result.y := p1.y + p2.y;
+}
+
+proc abs(ref a: Vector, ref result: int) {
+    result := a.points[0].x + a.points[1].x + a.points[2].x + a.points[0].y + a.points[1].y + a.points[2].y; 
+}
+
+proc main() {
+    var p1: Point;
+    var p2: Point;
+    var add_result: Point;
+    var vec: Vector;
+    var abs_result: int;
+
+    p1.x := 2;
+    p1.y := 3;
+
+    p2.x := 4;
+    p2.y := 5;
+
+    add(p1, p2, add_result);
+
+    printc('(');
+    printi(add_result.x);
+    printc('|');
+    printi(add_result.y);
+    printc(')');
+    printc('\n');
+
+    vec.id := 1;
+    vec.points[0].x := p1.x;
+    vec.points[0].y := p1.y;
+    vec.points[1].x := p2.x;
+    vec.points[1].y := p2.y;
+    vec.points[2].x := add_result.x;
+    vec.points[2].y := add_result.y;
+    abs(vec, abs_result);
+    printi(vec.id);
+    printc(':');
+    printc(' ');
+    printi(abs_result);
+    printc('\n');
+}

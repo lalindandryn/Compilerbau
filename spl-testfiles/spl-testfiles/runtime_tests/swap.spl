@@ -1,0 +1,30 @@
+//
+// swap.spl -- swap the values of two variables
+//
+
+
+proc swap(ref n: int, ref m: int) {
+  var k: int;
+
+  k := n;
+  n := m;
+  m := k;
+}
+
+
+proc main() {
+  var i: int;
+  var j: int;
+
+  i := 2;
+  j := 3;
+  printi(i);
+  printc(' ');
+  printi(j);
+  printc('\n');
+  swap(i, j);
+  printi(i);
+  printc(' ');
+  printi(j);
+  printc('\n');
+}
