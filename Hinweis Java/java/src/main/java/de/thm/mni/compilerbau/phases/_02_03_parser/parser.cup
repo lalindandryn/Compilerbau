@@ -1,0 +1,314 @@
+package de.thm.mni.compilerbau.phases._02_03_parser;
+
+import java.util.List;
+import java.util.LinkedList;
+import java_cup.runtime.*;
+import de.thm.mni.compilerbau.phases._01_scanner.Scanner;
+import de.thm.mni.compilerbau.absyn.*;
+import de.thm.mni.compilerbau.table.Identifier;
+import de.thm.mni.compilerbau.utils.SplError;
+import de.thm.mni.compilerbau.CommandLineOptions;
+
+parser code {:
+  public CommandLineOptions options = null;
+
+  public void syntax_error(Symbol currentToken) {
+    // Apparently there is a cup bug that causes expected_token_ids() to return incorrect results on first call
+    // This is why this call is inserted.
+    this.expected_token_ids();
+    
+    throw SplError.SyntaxError(new Position(currentToken.left, currentToken.right),
+            this.symbl_name_from_id(currentToken.sym),
+            this.expected_token_ids().stream().map(this::symbl_name_from_id).toList());
+  }
+  
+  /**
+   * @return An empty list. (Uses LinkedList)
+   */
+  public static <E> List<E> nil() {
+      return new LinkedList<E>();
+  }
+  
+  /**
+   * Constructs a list from a head and a tail without modifying the tail (Uses LinkedList).
+   * Use this as a helper if you don't want to deal with constructing lists manually.
+   *
+   * @param head The head of the list
+   * @param tail The tail of the list
+   * @return A list containing the head element and all elements of tail
+   */
+  public static <E> List<E> cons(E head, List<E> tail) {
+    List<E> copy = new LinkedList(tail);
+    copy.add(0, head);
+    return copy;
+  }
+:}
+
+/* Terminals/Tokens */
+terminal LBRACK, RBRACK, LPAREN, RPAREN, LCURL, RCURL;         //Braces, parenthesis, brackets
+terminal LT, LE, GT, GE, NE, EQ;                               //Comparison operators
+terminal PLUS, MINUS, STAR, SLASH;                             //Arithmetic operators
+terminal ASGN, COMMA, COLON, SEMIC;                            //Other delimiters
+terminal TYPE, PROC, ARRAY, OF, REF, VAR, IF, ELSE, WHILE;     //Keywords
+
+terminal Identifier IDENT;    //Identifiers
+terminal Integer INTLIT;      //Integer literals
+
+/* Non-terminals */
+non terminal Program program;
+non terminal List<GlobalDefinition> GlobalDefinitionList;
+non terminal GlobalDefinition GlobalDefinitions;
+non terminal List<Statement> StatementList;
+non terminal Statement Statements;
+non terminal TypeExpression Array;
+non terminal List<ParameterDefinition> ParameterDefinitionsList;
+non terminal ParameterDefinition ArgumentList;
+non terminal List<ParameterDefinition> NotEmptyArgumentList;
+non terminal List<VariableDefinition> VariableDefinitionList;
+non terminal VariableDefinition VariableDefinition;
+non terminal Statement CompoundStatement;
+non terminal Statement AssignStatement;
+non terminal Statement IfStatement;
+non terminal Statement WhileStatement;
+non terminal Statement CallStatement;
+non terminal List<Expression> Parameter;
+non terminal List<Expression> NotEmptyParameter;
+non terminal Expression Expr0;
+non terminal Expression Expr1;
+non terminal Expression Expr2;
+non terminal Expression Expr3;
+non terminal Expression Expr4;
+non terminal Variable VariableExpression;
+
+
+start with program;
+
+program ::= GlobalDefinitionList:list  {:
+                RESULT = new Program(new Position(listleft, listright), list);
+            :}
+        ;
+
+GlobalDefinitionList ::= GlobalDefinitions:head GlobalDefinitionList:tail  {:
+                                RESULT = cons(head, tail);  :}
+                      | /*empty*/  {:
+                           RESULT = nil();  :}
+                      ;
+
+
+GlobalDefinitions ::= PROC:pos IDENT:name LPAREN ParameterDefinitionsList:param RPAREN LCURL VariableDefinitionList:var StatementList:body RCURL  {:
+                               RESULT = new ProcedureDefinition(new Position(posleft, posright),
+                                                                                    name,
+                                                                                    param,
+                                                                                    var,
+                                                                                    body);
+                                                :}
+                      |  TYPE:pos IDENT:name EQ Array:type SEMIC {:
+                               RESULT = new TypeDefinition(new Position(posleft, posright), name, type);
+                           :}
+                      ;
+
+
+
+
+ParameterDefinitionsList ::= NotEmptyArgumentList: name{:
+                                RESULT = name;  :}
+                            | /* empty*/  {:
+                                RESULT = nil();  :}
+                            ;
+
+NotEmptyArgumentList ::= ArgumentList:head COMMA NotEmptyArgumentList:tail  {:
+                                 RESULT = cons(head, tail);  :}
+                             | ArgumentList:head  {:
+                                 RESULT = cons(head, nil()); :}
+                             ;
+
+ArgumentList ::= IDENT:name COLON:pos IDENT:type  {:
+                                RESULT = new ParameterDefinition(new Position(posleft, posright),
+                                         name,
+                                         new NamedTypeExpression(new Position(posleft, posright), type),
+                                         false);
+                            :}
+                        | REF IDENT:name COLON:pos IDENT:type  {:
+                                RESULT = new ParameterDefinition(new Position(posleft, posright),
+                                         name,
+                                         new NamedTypeExpression(new Position(posleft, posright), type),
+                                         true);
+                            :}
+                        ;
+
+Parameter ::= NotEmptyParameter:name  {:
+                  RESULT = name;  :}
+            | /* empty*/ {:
+                  RESULT = nil();  :}
+            ;
+
+NotEmptyParameter ::= Expr1:head COMMA NotEmptyParameter:tail {:
+                         RESULT = cons(head, tail);  :}
+                    | Expr1:head  {:
+                         RESULT = cons(head, nil()); :}
+                    ;
+
+
+VariableDefinitionList ::= VariableDefinition:head VariableDefinitionList:tail  {:
+                                RESULT = cons(head, tail);  :}
+                          | /*empty*/  {:
+                                RESULT = nil();  :}
+                          ;
+
+
+VariableDefinition ::=  VAR:pos IDENT:name COLON Array:type SEMIC  {:
+                                RESULT = new VariableDefinition(new Position(posleft, posright), name, type);
+                            :}
+                        ;
+
+Array ::= IDENT:name {:
+                RESULT = new NamedTypeExpression (new Position(nameleft, nameright), name);
+            :}
+         | ARRAY:pos LBRACK INTLIT:size RBRACK OF Array:type {:
+                RESULT = new ArrayTypeExpression(new Position(posleft, posright), size, type);
+            :}
+         ;
+
+
+StatementList ::=Statements:head StatementList:tail  {:
+                    RESULT = cons(head, tail);  :}
+               | /*empty*/  {:
+                    RESULT = nil();  :}
+               ;
+
+Statements ::= SEMIC:op  {:
+                    RESULT = new EmptyStatement(new Position(opleft, opright));
+                :}
+              | CompoundStatement:name  {:
+                    RESULT = name; :}
+              | AssignStatement:name {:
+                    RESULT = name; :}
+              | IfStatement:name {:
+                    RESULT = name; :}
+              | WhileStatement:name {:
+                    RESULT = name; :}
+              | CallStatement:name {:
+                    RESULT = name; :}
+
+              ;
+
+CompoundStatement ::= LCURL StatementList:sta RCURL  {:
+                        RESULT = new CompoundStatement(new Position(staleft, staright), sta);
+                    :}
+                    ;
+
+AssignStatement ::= VariableExpression:tar ASGN:op Expr1:val SEMIC  {:
+                        RESULT = new AssignStatement(new Position(opleft, opright),
+                        tar, val);  :}
+                 ;
+
+IfStatement ::= IF:pos LPAREN Expr0:test RPAREN Statements:thenStm  {:
+                        RESULT = new IfStatement(new Position(posleft, posright),
+                                                   test,
+                                                   thenStm,
+                                                   new EmptyStatement(Position.ERROR_POSITION));
+                    :}
+              | IF:pos LPAREN Expr0:test RPAREN Statements:thenStm ELSE Statements:elseStm{:
+                        RESULT = new IfStatement(new Position(posleft, posright),
+                                                   test,
+                                                   thenStm,
+                                                   elseStm);
+                    :}
+              ;
+
+WhileStatement ::= WHILE:pos LPAREN Expr0:test RPAREN Statements:stm  {:
+                        RESULT = new WhileStatement(new Position(posleft, posright),
+                                                        test,
+                                                        stm);
+                    :}
+                 ;
+
+CallStatement ::= IDENT:pname LPAREN Parameter:arg RPAREN SEMIC  {:
+                        RESULT = new CallStatement(new Position(pnameleft, pnameright),
+                        pname, arg);
+                    :}
+                ;
+
+Expr0 ::= Expr1:name   {:
+              RESULT = name; :}
+        | Expr1:lop LT:op Expr1:rop  {:
+              RESULT = new BinaryExpression(new Position(opleft, opright),
+              BinaryExpression.Operator.LST, lop, rop);
+                  :}
+        | Expr1:lop LE:op Expr1:rop  {:
+              RESULT = new BinaryExpression(new Position(opleft, opright),
+              BinaryExpression.Operator.LSE, lop, rop);
+                  :}
+        | Expr1:lop GT:op Expr1:rop  {:
+              RESULT = new BinaryExpression(new Position(opleft, opright),
+              BinaryExpression.Operator.GRT, lop, rop);
+                  :}
+        | Expr1:lop GE:op Expr1:rop  {:
+              RESULT = new BinaryExpression(new Position(opleft, opright),
+              BinaryExpression.Operator.GRE, lop, rop);
+                  :}
+        | Expr1:lop NE:op Expr1:rop  {:
+              RESULT = new BinaryExpression(new Position(opleft, opright),
+              BinaryExpression.Operator.NEQ, lop, rop);
+                  :}
+        | Expr1:lop EQ:op Expr1:rop  {:
+              RESULT = new BinaryExpression(new Position(opleft, opright),
+              BinaryExpression.Operator.EQU, lop, rop);
+                  :}
+        ;
+
+
+Expr1 ::= Expr1:lop PLUS:op Expr2:rop  {:
+            RESULT = new BinaryExpression(new Position(opleft, opright),
+            BinaryExpression.Operator.ADD, lop, rop);
+                :}
+        | Expr1:lop MINUS:op Expr2:rop  {:
+            RESULT = new BinaryExpression(new Position(opleft, opright),
+            BinaryExpression.Operator.SUB, lop, rop);
+                :}
+        | Expr2:name {:
+            RESULT = name; :}
+        ;
+
+Expr2 ::= Expr2:lop STAR:op Expr3:rop  {:
+            RESULT = new BinaryExpression(new Position(opleft, opright),
+            BinaryExpression.Operator.MUL, lop, rop);
+                :}
+        | Expr2:lop SLASH:op Expr3:rop  {:
+            RESULT = new BinaryExpression(new Position(opleft, opright),
+            BinaryExpression.Operator.DIV, lop, rop);
+                :}
+        | Expr3:name {:
+            RESULT = name; :}
+        ;
+
+Expr3 ::= MINUS:op Expr4:rop {:
+            RESULT = new UnaryExpression(new Position(opleft, opright),
+                     UnaryExpression.Operator.MINUS, rop);
+           :}
+        | Expr4:name {:
+             RESULT = name; :}
+        ;
+Expr4 ::= LPAREN Expr1:name RPAREN {:
+            RESULT = name;  :}
+        | INTLIT:val  {:
+                     RESULT = new IntLiteral(new Position(valleft, valright), val);
+                 :}
+               | VariableExpression:name {:
+                     RESULT = new VariableExpression(new Position(nameleft, nameright), name);
+                 :}
+
+               ;
+
+
+VariableExpression ::= IDENT:name {:
+                            RESULT = new NamedVariable(new Position(nameleft, nameright), name);
+                        :}
+                      | VariableExpression:name LBRACK Expr1:exp RBRACK {:
+                            RESULT = new ArrayAccess(new Position(nameleft, nameright),
+                                     name,
+                                     exp);
+                        :}
+
+                      ;
+
