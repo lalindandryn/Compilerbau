@@ -1,7 +1,6 @@
 package de.thm.mni.compilerbau
 
 import de.thm.mni.compilerbau.absyn.Program
-import de.thm.mni.compilerbau.phases._01_scanner.Scanner
 import de.thm.mni.compilerbau.phases._02_03_parser.Parser
 import de.thm.mni.compilerbau.phases._02_03_parser.Sym
 import de.thm.mni.compilerbau.phases._04a_tablebuild.TableBuilder

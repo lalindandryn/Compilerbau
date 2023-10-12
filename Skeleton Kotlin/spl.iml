@@ -3,8 +3,8 @@
   <component name="AutoImportedSourceRoots">
     <option name="directories">
       <list>
-        <option value="D:\Projekte\THM\cb_bs_ksp\compilerbau\praktikum\spl-compiler-skeleton\kotlin\target/generated-sources/cup" />
-        <option value="D:\Projekte\THM\cb_bs_ksp\compilerbau\praktikum\spl-compiler-skeleton\kotlin\target/generated-sources/jflex" />
+        <option value="D:\LINDA\THM\Semester 6\cb-wise-2324\Skeleton Kotlin\kotlin\target/generated-sources/cup" />
+        <option value="D:\LINDA\THM\Semester 6\cb-wise-2324\Skeleton Kotlin\kotlin\target/generated-sources/jflex" />
         <option value="src/main/kotlin" />
       </list>
     </option>
