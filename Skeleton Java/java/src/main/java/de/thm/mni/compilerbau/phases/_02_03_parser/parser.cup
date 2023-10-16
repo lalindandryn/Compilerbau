@@ -56,7 +56,76 @@ terminal Integer INTLIT;      //Integer literals
 
 /* Non-terminals */
 non terminal Program program;
+non terminal GlobalDefinition GlobalDeclaration;
+non terminal TypeDefinition TypeDeclaration;
+non terminal TypeExpression TypeExpression;
+non terminal ProcedureDefinition ProcedureDeclaration;
+non terminal ParameterDefinition ParameterDeclaration;
+non terminal VariableDefinition VariableDeclaration;
+non terminal AssignStatement AssignStmt;
+non terminal CallStatement CallStmt;
+non terminal CompoundStatement CompoundStmt;
+non terminal EmptyStatement EmptyStmt;
+non terminal IfStatement IfStmt;
+non terminal WhileStatement WhileStmt;
+non terminal Statement Statement;
+non terminal Expression Expr;
+non terminal NamedVariable VarName;
+
+non terminal List<GlobalDefinition> GlobalDecList;
+non terminal List<ParameterDefinition> ParameterList;
+non terminal List<VariableDefinition> VariableList;
+non terminal List<Statement> StatementList;
+non terminal List<Expression> ArgumentExprList;
 
 start with program;
 
-program ::= INTLIT; //TODO (assignment 2 and 3): Just a dummy, needs to be replaced by the actual spl grammar.
+//TODO (assignment 2 and 3): Just a dummy, needs to be replaced by the actual spl grammar.
+
+//SPL Program contains of many global declarations
+program ::= GlobalDecList;
+
+//GL : G | GL | empty;
+GlobalDecList ::= GlobalDeclaration
+                | GlobalDecList
+                | /*empty*/;
+
+//A Global declaration has 2 type of declaration 1.) Type Declaration 2.) Procedure Declaration
+GlobalDeclaration ::= TypeDeclaration
+                    | ProcedureDeclaration;
+
+TypeDeclaration ::= TYPE IDENT EQ TypeExpression SEMIC;
+
+TypeExpression ::= IDENT //Named Typed Expression
+                 | ARRAY LBRACK INTLIT RBRACK OF TypeExpression; //Array type Expression
+
+//proc proc_name(parameters){ variables_and_statements }
+ProcedureDeclaration ::= PROC IDENT LPAREN ParameterList RPAREN LCURL VariableList StatementList RCURL;
+
+ParameterList ::= ParameterDeclaration | ParameterDeclaration COMMA ParameterList | /*Empty Declaration*/;
+
+ParameterDeclaration ::= IDENT COLON TypeExpression | REF IDENT COLON TypeExpression;
+
+VariableList ::= VariableDeclaration | VariableList;
+
+VariableDeclaration ::= VAR IDENT COLON TypeExpression SEMIC;
+
+StatementList ::= Statement StatementList | /*EmptyStatement*/;
+
+//Statements have various type such as:
+Statement ::= AssignStmt | CallStmt | CompoundStmt | WhileStmt | IfStmt;
+
+AssignStmt ::= VarName ASGN Expr SEMIC;
+
+CallStmt ::= IDENT LPAREN ArgumentExprList RPAREN SEMIC;
+
+CompoundStmt ::= LCURL StatementList RCURL;
+
+WhileStmt ::= WHILE LPAREN Expr RPAREN Statement;
+
+IfStmt ::= IF LPAREN Expr RPAREN Statement | IF LPAREN Expr RPAREN Statement ELSE Statement; // Normaly followed with compound statement
+
+VarName ::= IDENT;
+
+
+
