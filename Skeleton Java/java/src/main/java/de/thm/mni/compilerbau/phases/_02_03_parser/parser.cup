@@ -70,7 +70,11 @@ non terminal IfStatement IfStmt;
 non terminal WhileStatement WhileStmt;
 non terminal Statement Statement;
 non terminal Expression Expr;
-non terminal NamedVariable VarName;
+non terminal Expression Expr1;
+non terminal Expression Expr2;
+non terminal Expression Expr3;
+non terminal Expression Expr4;
+non terminal Variable VarName;
 
 non terminal List<GlobalDefinition> GlobalDecList;
 non terminal List<ParameterDefinition> ParameterList;
@@ -78,6 +82,8 @@ non terminal List<ParameterDefinition> NotEmptyParameterList;
 non terminal List<VariableDefinition> VariableList;
 non terminal List<Statement> StatementList;
 non terminal List<Expression> ArgumentExprList;
+non terminal List<Expression> NotEmptyArgument;
+
 
 start with program;
 
@@ -119,9 +125,13 @@ VariableDeclaration ::= VAR IDENT COLON TypeExpression SEMIC;
 StatementList ::= Statement StatementList | /*EmptyStatement*/;
 
 //Statements have various type such as:
-Statement ::= AssignStmt | CallStmt | CompoundStmt | WhileStmt | IfStmt;
+Statement ::= AssignStmt
+            | CallStmt
+            | CompoundStmt
+            | WhileStmt
+            | IfStmt;
 
-AssignStmt ::= VarName ASGN Expr SEMIC;
+AssignStmt ::= VarName ASGN Expr1 SEMIC;
 
 CallStmt ::= IDENT LPAREN ArgumentExprList RPAREN SEMIC;
 
@@ -129,9 +139,39 @@ CompoundStmt ::= LCURL StatementList RCURL;
 
 WhileStmt ::= WHILE LPAREN Expr RPAREN Statement;
 
-IfStmt ::= IF LPAREN Expr RPAREN Statement | IF LPAREN Expr RPAREN Statement ELSE Statement; // Normaly followed with compound statement
+IfStmt ::= IF LPAREN Expr RPAREN Statement
+         | IF LPAREN Expr RPAREN Statement ELSE Statement; // Normaly followed with compound statement
 
-VarName ::= IDENT;
+//ArgumentList for Call Statement
+ArgumentExprList ::= NotEmptyArgument
+                    | /* EmptyArgument */ ;
+
+NotEmptyArgument ::= Expr1 COMMA NotEmptyArgument
+                    | Expr1 ;
+
+VarName ::= IDENT
+            | VarName LBRACK Expr1 RBRACK;
+
+Expr ::= Expr1
+        | Expr1 LT Expr1
+        | Expr1 LE Expr1
+        | Expr1 GT Expr1
+        | Expr1 GE Expr1
+        | Expr1 EQ Expr1
+        | Expr1 NE Expr1 ;
+
+Expr1 ::= Expr1 PLUS Expr2
+        | Expr1 MINUS Expr2
+        | Expr2 ;
+
+Expr2 ::= Expr2 STAR Expr3
+        | Expr2 SLASH Expr3
+        | Expr3 ;
+
+Expr3 ::= LPAREN Expr1 RPAREN
+        | INTLIT
+        | VarName
+        | MINUS Expr3 ;
 
 
 
