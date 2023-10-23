@@ -74,6 +74,7 @@ non terminal NamedVariable VarName;
 
 non terminal List<GlobalDefinition> GlobalDecList;
 non terminal List<ParameterDefinition> ParameterList;
+non terminal List<ParameterDefinition> NotEmptyParameterList;
 non terminal List<VariableDefinition> VariableList;
 non terminal List<Statement> StatementList;
 non terminal List<Expression> ArgumentExprList;
@@ -86,8 +87,7 @@ start with program;
 program ::= GlobalDecList;
 
 //GL : G | GL | empty;
-GlobalDecList ::= GlobalDeclaration
-                | GlobalDecList
+GlobalDecList ::= GlobalDeclaration GlobalDecList
                 | /*empty*/;
 
 //A Global declaration has 2 type of declaration 1.) Type Declaration 2.) Procedure Declaration
@@ -102,11 +102,17 @@ TypeExpression ::= IDENT //Named Typed Expression
 //proc proc_name(parameters){ variables_and_statements }
 ProcedureDeclaration ::= PROC IDENT LPAREN ParameterList RPAREN LCURL VariableList StatementList RCURL;
 
-ParameterList ::= ParameterDeclaration | ParameterDeclaration COMMA ParameterList | /*Empty Declaration*/;
+ParameterList ::= NotEmptyParameterList
+                | /*EmptyDeclaration*/;
+
+//NotEmptyParameterList is called if the parameter is not empty
+NotEmptyParameterList ::= ParameterDeclaration
+                        | ParameterDeclaration COMMA NotEmptyParameterList;
 
 ParameterDeclaration ::= IDENT COLON TypeExpression | REF IDENT COLON TypeExpression;
 
-VariableList ::= VariableDeclaration | VariableList;
+VariableList ::= VariableDeclaration VariableList
+                | /*EmtpyVariableList*/;
 
 VariableDeclaration ::= VAR IDENT COLON TypeExpression SEMIC;
 
