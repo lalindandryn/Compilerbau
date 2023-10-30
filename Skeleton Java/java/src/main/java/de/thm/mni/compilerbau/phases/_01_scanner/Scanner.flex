@@ -37,7 +37,7 @@ D = [0-9]
 H = [0-9A-Fa-f]
 DECIMAL = {D}+
 HEXADECIMAL = 0x{H}+
-Ident = {L}({L} | {D} | "-")*
+Ident = {L}({L} | {D} | "_")*
 %%
 
 // TODO (assignment 1): The regular expressions for all tokens need to be defined here.
@@ -84,12 +84,11 @@ Ident = {L}({L} | {D} | "-")*
 //Literals
 {DECIMAL} {return symbol(Sym.INTLIT, Integer.parseInt(yytext()));}
 {HEXADECIMAL} {return symbol(Sym.INTLIT, Integer.parseInt(yytext().substring(2), 16));}
-"." {return symbol(Sym.INTLIT, new Integer(yytext().charAt(1)));}
-"\\n" {return symbol(Sym.INTLIT, 10);} //Char for new line
+'.' {return symbol(Sym.INTLIT, new Integer(yytext().charAt(1)));}
+'\\n' {return symbol(Sym.INTLIT, 10);} //Char for new line
 
 //Whitespaces
-"//" .* {}
-"'" {}
+
 [ \t\n\r]+ {}
 \/\/ .* {}
 
