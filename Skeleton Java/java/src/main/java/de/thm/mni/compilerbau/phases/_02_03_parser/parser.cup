@@ -126,7 +126,8 @@ VariableDeclaration ::= VAR IDENT COLON TypeExpression SEMIC;
 StatementList ::= Statement StatementList | /*EmptyStatement*/;
 
 //Statements have various type such as:
-Statement ::= AssignStmt
+Statement ::= SEMIC
+            | AssignStmt
             | CallStmt
             | CompoundStmt
             | WhileStmt

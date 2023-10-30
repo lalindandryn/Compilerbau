@@ -84,12 +84,10 @@ Ident = {L}({L} | {D} | "_")*
 //Literals
 {DECIMAL} {return symbol(Sym.INTLIT, Integer.parseInt(yytext()));}
 {HEXADECIMAL} {return symbol(Sym.INTLIT, Integer.parseInt(yytext().substring(2), 16));}
-"." {return symbol(Sym.INTLIT, new Integer(yytext().charAt(1)));}
-"\\n" {return symbol(Sym.INTLIT, 10);} //Char for new line
+'.' {return symbol(Sym.INTLIT, new Integer(yytext().charAt(1)));}
+'\\n' {return symbol(Sym.INTLIT, 10);} //Char for new line
 
 //Whitespaces
-"//" .* {}
-//"'" {}
 [ \t\n\r]+ {}
 \/\/ .* {}
 
