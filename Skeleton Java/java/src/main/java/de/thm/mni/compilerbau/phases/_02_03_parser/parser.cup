@@ -90,17 +90,33 @@ start with program;
 //TODO (assignment 2 and 3): Just a dummy, needs to be replaced by the actual spl grammar.
 
 //SPL Program contains of many global declarations
-program ::= GlobalDecList;
+program ::= GlobalDecList:list {:
+                RESULT = new Program(new Position(listleft, listright), list);
+            :}
+;
 
-//GL : G | GL | empty;
-GlobalDecList ::= GlobalDeclaration GlobalDecList
-                | /*empty*/;
+//GL : G  GL | empty;
+GlobalDecList ::= GlobalDeclaration:head GlobalDecList:tail {:
+                    RESULT = cons(head, tail);
+                :}
+                | /*empty*/ {:
+                    RESULT = nil();
+                :}
+                ;
 
 //A Global declaration has 2 type of declaration 1.) Type Declaration 2.) Procedure Declaration
-GlobalDeclaration ::= TypeDeclaration
-                    | ProcedureDeclaration;
+GlobalDeclaration ::= TypeDeclaration:name {:
+                        RESULT = name;
+                    :}
+                    | ProcedureDeclaration:name {:
+                        RESULT = name;
+                    :}
+                    ;
 
-TypeDeclaration ::= TYPE IDENT EQ TypeExpression SEMIC;
+TypeDeclaration ::= TYPE:pos IDENT:name EQ TypeExpression:typeExpression SEMIC {:
+                        RESULT = new TypeDefinition(new Position(posleft, posright), name, typeExpression);
+                    :}
+                    ;
 
 TypeExpression ::= IDENT //Named Typed Expression
                  | ARRAY LBRACK INTLIT RBRACK OF TypeExpression; //Array type Expression
@@ -131,7 +147,8 @@ Statement ::= SEMIC
             | CallStmt
             | CompoundStmt
             | WhileStmt
-            | IfStmt;
+            | IfStmt
+            | /*emptyStatement*/ SEMIC;
 
 AssignStmt ::= VarName ASGN Expr1 SEMIC;
 
