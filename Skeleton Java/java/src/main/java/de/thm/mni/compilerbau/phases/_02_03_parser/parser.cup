@@ -78,11 +78,11 @@ non terminal Variable VarName;
 
 non terminal List<GlobalDefinition> GlobalDecList;
 non terminal List<ParameterDefinition> ParameterList;
-non terminal List<ParameterDefinition> NotEmptyParameterList;
+non terminal List<ParameterDefinition> NEParameterList;
 non terminal List<VariableDefinition> VariableList;
 non terminal List<Statement> StatementList;
 non terminal List<Expression> ArgumentExprList;
-non terminal List<Expression> NotEmptyArgument;
+non terminal List<Expression> NEArgument;
 
 
 start with program;
@@ -124,24 +124,26 @@ TypeExpression ::= IDENT //Named Typed Expression
 //proc proc_name(parameters){ variables_and_statements }
 ProcedureDeclaration ::= PROC IDENT LPAREN ParameterList RPAREN LCURL VariableList StatementList RCURL;
 
-ParameterList ::= NotEmptyParameterList
+ParameterList ::= NEParameterList
                 | /*EmptyDeclaration*/;
 
 //NotEmptyParameterList is called if the parameter is not empty
-NotEmptyParameterList ::= ParameterDeclaration
-                        | ParameterDeclaration COMMA NotEmptyParameterList;
+NEParameterList ::= ParameterDeclaration
+                  | ParameterDeclaration COMMA NEParameterList;
 
-ParameterDeclaration ::= IDENT COLON TypeExpression | REF IDENT COLON TypeExpression;
+ParameterDeclaration ::= IDENT COLON TypeExpression
+                       | REF IDENT COLON TypeExpression;
 
 VariableList ::= VariableDeclaration VariableList
-                | /*EmtpyVariableList*/;
+               | /*EmtpyVariableList*/;
 
 VariableDeclaration ::= VAR IDENT COLON TypeExpression SEMIC;
 
 StatementList ::= Statement StatementList | /*EmptyStatement*/;
 
 //Statements have various type such as:
-Statement ::= AssignStmt
+Statement ::= SEMIC
+            | AssignStmt
             | CallStmt
             | CompoundStmt
             | WhileStmt
@@ -160,17 +162,16 @@ IfStmt ::= IF LPAREN Expr RPAREN Statement
          | IF LPAREN Expr RPAREN Statement ELSE Statement; // Normaly followed with compound statement
 
 //ArgumentList for Call Statement
-ArgumentExprList ::= NotEmptyArgument
+ArgumentExprList ::= NEArgument
                     | /* EmptyArgument */ ;
 
-NotEmptyArgument ::= Expr1 COMMA NotEmptyArgument
+NEArgument ::= Expr1 COMMA NEArgument
                     | Expr1 ;
 
 VarName ::= IDENT
             | VarName LBRACK Expr1 RBRACK;
 
-Expr ::= Expr1
-        | Expr1 LT Expr1
+Expr ::= Expr1 LT Expr1
         | Expr1 LE Expr1
         | Expr1 GT Expr1
         | Expr1 GE Expr1
@@ -189,6 +190,3 @@ Expr3 ::= LPAREN Expr1 RPAREN
         | INTLIT
         | VarName
         | MINUS Expr3 ;
-
-
-

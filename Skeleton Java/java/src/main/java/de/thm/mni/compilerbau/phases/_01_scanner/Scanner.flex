@@ -88,7 +88,6 @@ Ident = {L}({L} | {D} | "_")*
 '\\n' {return symbol(Sym.INTLIT, 10);} //Char for new line
 
 //Whitespaces
-
 [ \t\n\r]+ {}
 \/\/ .* {}
 
