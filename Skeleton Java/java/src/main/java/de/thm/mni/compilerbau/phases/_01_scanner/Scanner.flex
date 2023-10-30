@@ -51,6 +51,7 @@ Ident = {L}({L} | {D} | "-")*
 "}" {return symbol(Sym.RCURL);}
 ":" {return symbol(Sym.COLON);}
 ";" {return symbol(Sym.SEMIC);}
+":=" {return symbol(Sym.ASGN);}
 //Symbols: Comparance
 "<" {return symbol(Sym.LT);}
 ">" {return symbol(Sym.GT);}
