@@ -69,8 +69,9 @@ non terminal EmptyStatement EmptyStmt;
 non terminal IfStatement IfStmt;
 non terminal WhileStatement WhileStmt;
 non terminal Statement Statement;
-non terminal Expression Expr;
+non terminal Expression Expr, SimpleExpr;
 non terminal NamedVariable VarName;
+non terminal ArrayAccess ArrAccess;
 
 non terminal List<GlobalDefinition> GlobalDecList;
 non terminal List<ParameterDefinition> ParameterList;
@@ -110,22 +111,8 @@ VariableList ::= VariableDeclaration | VariableList;
 
 VariableDeclaration ::= VAR IDENT COLON TypeExpression SEMIC;
 
-StatementList ::= Statement StatementList | /*EmptyStatement*/;
+ArrayAccess ::= VarName LBRACK SimpleExpr RBRACK;
 
-//Statements have various type such as:
-Statement ::= AssignStmt | CallStmt | CompoundStmt | WhileStmt | IfStmt;
+StatementList ::= Statement StatementList | /*Empty Statement*/;
 
-AssignStmt ::= VarName ASGN Expr SEMIC;
-
-CallStmt ::= IDENT LPAREN ArgumentExprList RPAREN SEMIC;
-
-CompoundStmt ::= LCURL StatementList RCURL;
-
-WhileStmt ::= WHILE LPAREN Expr RPAREN Statement;
-
-IfStmt ::= IF LPAREN Expr RPAREN Statement | IF LPAREN Expr RPAREN Statement ELSE Statement; // Normaly followed with compound statement
-
-VarName ::= IDENT;
-
-
-
+Statement ::= SEMIC;
