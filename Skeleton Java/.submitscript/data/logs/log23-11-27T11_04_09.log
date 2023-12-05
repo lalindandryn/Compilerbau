@@ -1,0 +1,20 @@
+[2023-11-27 11:04:09.490536] Bootstrap log:
+Identified Python 3.10.12 at /usr/bin/python3.10
+[Bootstrap] Identified pip 22.0.2 from /usr/lib/python3/dist-packages/pip (python 3.10)' at /usr/bin/python3.10 -m pip
+[Bootstrap] Identified 'pipenv, version 2023.5.19' at /usr/bin/python3.10 -m pipenv
+[Bootstrap] Running '/usr/bin/python3.10 -m pipenv install --python 3.10' to ensure the existence of a virtual environment.
+[Bootstrap] This may take a moment.
+Installing dependencies from Pipfile.lock (df9bb1)...
+To activate this project's virtualenv, run pipenv shell.
+Alternatively, run a command inside the virtualenv with pipenv run.
+[Bootstrap] Running the script in a virtual environment.
+/usr/bin/python3.10 -m pipenv run python3 ./main.py
+
+[2023-11-27 11:04:09.490599] === Welcome ===
+[2023-11-27 11:04:09.575439] Please review the currently saved information about your team:
+[2023-11-27 11:04:09.575578]  1 - First name: Linda Septira; Last name: Andryani; Matriculation number: 5345375
+[2023-11-27 11:04:09.575606]  2 - First name: Yohanes Ranandika; Last name: Kirana; Matriculation number: 5310931
+[2023-11-27 11:04:12.021127] Sorry, again.
+[2023-11-27 11:04:14.187067] A new team.json will now be created.
+
+[2023-11-27 11:04:14.187189] Please enter details of team member 1.
