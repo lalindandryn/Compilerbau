@@ -1,0 +1,71 @@
+private class TableVisitor extends DoNothingVisitor{
+        SymbolTable symbolTable;
+        TableVisitor upperVisitor;
+        List<ParameterType> listOfParams;
+        public TableVisitor(SymbolTable symbolTable){
+            this.symbolTable = symbolTable;
+        }
+        public TableVisitor(SymbolTable symbolTable, TableVisitor upperVisitor){
+            this.symbolTable = symbolTable;
+            this.upperVisitor = upperVisitor;
+        }
+
+        public void visit(Program program){
+            for (GlobalDefinition definition : program.definitions) {
+                definition.accept(this);
+            }
+        }
+
+        public void visit(ProcedureDefinition procDef){
+            System.out.println(procDef);
+            symbolTable = new SymbolTable(mySymbolTable);
+            listOfParams = new ArrayList<>();
+
+            for (ParameterDefinition parameter : procDef.parameters) {
+                parameter.accept(this);
+            }
+
+            for (VariableDefinition variable : procDef.variables) {
+                variable.accept(this);
+            }
+
+            printSymbolTableAtEndOfProcedure(procDef.name, new ProcedureEntry(symbolTable, listOfParams));
+            mySymbolTable.enter(procDef.name,new ProcedureEntry(symbolTable, listOfParams), SplError.CallOfNonProcedure(procDef.position, procDef.name));
+        }
+
+        public void visit(TypeDefinition typeDef){
+            typeDef.typeExpression.accept(this);
+            mySymbolTable.enter(typeDef.name, new TypeEntry(null), SplError.NotAType(typeDef.position, typeDef.name));
+        }
+
+        public void visit(ArrayTypeExpression arrayExpr){
+            arrayExpr.baseType.accept(this);
+
+            //arrayExpr.typeName = new ArrayType(arrayExpr.baseType.typeName, arrayExpr.arraySize);
+        }
+
+        public void visit(VariableDefinition varDef){
+            varDef.typeExpression.accept(this);
+            symbolTable.enter(varDef.name, new VariableEntry(null, false), SplError.NotAVariable(varDef.position, varDef.name));
+        }
+
+        public void visit(ParameterDefinition paramDef){
+            paramDef.typeExpression.accept(this);
+            symbolTable.enter(paramDef.name, new VariableEntry(paramDef.typeExpression.typeName, paramDef. isReference));
+
+            if((paramDef.typeExpression.typeName instanceof ArrayType) && !(paramDef.isReference)){
+                throw SplError.ParameterMustBeReference(paramDef.position, paramDef.name, paramDef.typeExpression.typeName);
+            }
+
+            listOfParams.add(new ParameterType(paramDef.typeExpression.typeName, paramDef.isReference));
+        }
+
+        public void visit(NamedTypeExpression namedExpr){
+            Entry entry = mySymbolTable.lookup(namedExpr.name, SplError.UndefinedIdentifier(namedExpr.position, namedExpr.name));
+
+            if(!(entry instanceof TypeEntry)){
+                throw SplError.NotAType(namedExpr.position, namedExpr.name);
+            }
+            namedExpr.typeName = ((TypeEntry) entry).type;
+        }
+    }

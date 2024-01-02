@@ -1,0 +1,10 @@
+de.thm.mni.compilerbau
+de.thm.mni.compilerbau.absyn
+de.thm.mni.compilerbau.absyn.visitor
+de.thm.mni.compilerbau.phases._04a_tablebuild
+de.thm.mni.compilerbau.phases._04b_semant
+de.thm.mni.compilerbau.phases._05_varalloc
+de.thm.mni.compilerbau.phases._06_codegen
+de.thm.mni.compilerbau.table
+de.thm.mni.compilerbau.types
+de.thm.mni.compilerbau.utils
