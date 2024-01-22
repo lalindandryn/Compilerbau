@@ -28,8 +28,9 @@ public class TableBuilder {
 
     public SymbolTable buildSymbolTable(Program program) {
         //TODO (assignment 4a): Initialize a symbol table with all predefined symbols and fill it with user-defined symbols
-
-        throw new NotImplemented();
+        SymbolTable symbolTable = TableInitializer.initializeGlobalTable();
+        System.out.println(symbolTable);
+        return symbolTable;
     }
 
     /**
