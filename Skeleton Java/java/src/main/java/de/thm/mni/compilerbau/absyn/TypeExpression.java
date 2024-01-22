@@ -11,7 +11,6 @@ import de.thm.mni.compilerbau.types.Type;
  * during phase 4.
  */
 sealed public abstract class TypeExpression extends Node permits ArrayTypeExpression, NamedTypeExpression {
-    public Type typeName = null;
     public TypeExpression(Position position) {
         super(position);
     }

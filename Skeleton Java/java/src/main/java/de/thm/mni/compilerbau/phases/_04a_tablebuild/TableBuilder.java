@@ -1,5 +1,6 @@
 package de.thm.mni.compilerbau.phases._04a_tablebuild;
 
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import de.thm.mni.compilerbau.CommandLineOptions;
@@ -8,6 +9,7 @@ import de.thm.mni.compilerbau.absyn.visitor.DoNothingVisitor;
 import de.thm.mni.compilerbau.absyn.visitor.Visitor;
 import de.thm.mni.compilerbau.table.*;
 import de.thm.mni.compilerbau.types.ArrayType;
+import de.thm.mni.compilerbau.types.PrimitiveType;
 import de.thm.mni.compilerbau.types.Type;
 import de.thm.mni.compilerbau.utils.NotImplemented;
 import de.thm.mni.compilerbau.utils.SplError;
@@ -22,136 +24,91 @@ import javax.naming.Name;
  * Calculated {@link Type}s can be stored in and read from the dataType field of the {@link Expression},
  * {@link TypeExpression} or {@link Variable} classes.
  */
-public class TableBuilder extends DoNothingVisitor implements Visitor {
+public class TableBuilder {
     private final CommandLineOptions options;
 
     public TableBuilder(CommandLineOptions options) {
         this.options = options;
     }
 
-    private SymbolTable mySymbolTable = new SymbolTable();//create new symbol table
-    private SymbolTable globalSymTab;
+    private SymbolTable globalTable = new SymbolTable();//create new symbol table
+    private SymbolTable localTable;
     private List<ParameterType> listOfParams;
+
+    private Type dataType = null;
+    private Type baseType = null;
+
     public SymbolTable buildSymbolTable(Program program) {
         //TODO (assignment 4a): Initialize a symbol table with all predefined symbols and fill it with user-defined symbols
-
-        mySymbolTable = TableInitializer.initializeGlobalTable();
-        visit(program);
-        return mySymbolTable;
-    }
-
-    @Override
-    public void visit(ArrayAccess arrayAccess) {
-
-    }
-
-    @Override
-    public void visit(ArrayTypeExpression arrayTypeExpression) {
-        arrayTypeExpression.baseType.accept(this);
-        arrayTypeExpression.typeName = new ArrayType(arrayTypeExpression.baseType.typeName, arrayTypeExpression.arraySize);
-    }
-
-    @Override
-    public void visit(AssignStatement assignStatement) {
-
-    }
-
-    @Override
-    public void visit(BinaryExpression binaryExpression) {
-
-    }
-
-    @Override
-    public void visit(UnaryExpression unaryExpression) {
-
-    }
-
-    @Override
-    public void visit(CallStatement callStatement) {
-
-    }
-
-    @Override
-    public void visit(CompoundStatement compoundStatement) {
-
-    }
-
-    @Override
-    public void visit(EmptyStatement emptyStatement) {
-
-    }
-
-    @Override
-    public void visit(IfStatement ifStatement) {
-
-    }
-
-    @Override
-    public void visit(IntLiteral intLiteral) {
-
-    }
-
-    @Override
-    public void visit(NamedTypeExpression namedTypeExpression) {
-        Entry entry = mySymbolTable.lookup(namedTypeExpression.name);
-        if(!(entry instanceof TypeEntry)){
-            throw SplError.NotAType(namedTypeExpression.position, namedTypeExpression.name);
-        }
-        namedTypeExpression.typeName = ((TypeEntry) entry).type;
-    }
-
-    @Override
-    public void visit(NamedVariable namedVariable) {
-
-    }
-
-    @Override
-    public void visit(ParameterDefinition parameterDefinition) {
-        parameterDefinition.typeExpression.accept(this);
-        globalSymTab.enter(parameterDefinition.name, new VariableEntry(parameterDefinition.typeExpression.typeName, parameterDefinition. isReference));
-
-        if((parameterDefinition.typeExpression.typeName instanceof ArrayType) && !(parameterDefinition.isReference)){
-            throw SplError.ParameterMustBeReference(parameterDefinition.position, parameterDefinition.name, parameterDefinition.typeExpression.typeName);
+        globalTable = TableInitializer.initializeGlobalTable();
+        for(var globalDeclaration: program.definitions){
+            switch (globalDeclaration){
+                case ProcedureDefinition procedureDefinition -> {
+                    //empty
+                }
+                case TypeDefinition typeDefinition ->{
+                    dataTypeSwitcher(typeDefinition.typeExpression);
+                    globalTable.enter(typeDefinition.name, new TypeEntry(dataType));
+                }
+            }
         }
 
-        listOfParams.add(new ParameterType(parameterDefinition.typeExpression.typeName, parameterDefinition.isReference));
+        for(var globalDeclaration: program.definitions){
+            switch (globalDeclaration){
+                case ProcedureDefinition procedureDefinition -> {
+                    localTable = new SymbolTable(globalTable);
+                    listOfParams = new ArrayList<>();
+                    for(var parameter: procedureDefinition.parameters){
+                        dataTypeSwitcher(parameter.typeExpression);
+                        localTable.enter(parameter.name, new VariableEntry(dataType, parameter.isReference));
+                        listOfParams.add(new ParameterType(dataType, parameter.isReference));
+                    }
+
+                    for(var variable: procedureDefinition.variables){
+                        dataTypeSwitcher(variable.typeExpression);
+                        localTable.enter(variable.name, new VariableEntry(dataType, false));
+                    }
+
+                    globalTable.enter(procedureDefinition.name, new ProcedureEntry(localTable, listOfParams));
+                    printSymbolTableAtEndOfProcedure(procedureDefinition.name, new ProcedureEntry(localTable, listOfParams));
+                }
+                case TypeDefinition typeDefinition -> {
+                    //empty
+                }
+            }
+        }
+
+        return globalTable;
     }
 
-    @Override
-    public void visit(ProcedureDefinition procedureDefinition) {
-        globalSymTab = new SymbolTable(mySymbolTable);
-        listOfParams = new ArrayList<>();
-        procedureDefinition.parameters.forEach(parameterDefinition -> parameterDefinition.accept(this));
-        procedureDefinition.variables.forEach(variableDefinition -> variableDefinition.accept(this));
-        mySymbolTable.enter(procedureDefinition.name, new ProcedureEntry(globalSymTab, listOfParams));
-        printSymbolTableAtEndOfProcedure(procedureDefinition.name, new ProcedureEntry(globalSymTab, listOfParams));
+    private Type dataTypeSwitcher(TypeExpression typeExpression){
+        switch (typeExpression){
+            case ArrayTypeExpression arrayTypeExpression -> {
+                baseType = determineBaseType(arrayTypeExpression.baseType);
+                dataType = new ArrayType(baseType, arrayTypeExpression.arraySize);
+            }
+            case NamedTypeExpression namedTypeExpression -> {
+                Entry entry = globalTable.lookup(namedTypeExpression.name);
+                if(!(entry instanceof TypeEntry)){
+                    throw SplError.NotAType(namedTypeExpression.position, namedTypeExpression.name);
+                }
+                dataType = ((TypeEntry) entry).type;
+            }
+        }
+        return  dataType;
     }
 
-    @Override
-    public void visit(Program program) {
-        program.definitions.forEach(globalDefinition -> globalDefinition.accept(this));
-    }
-
-    @Override
-    public void visit(TypeDefinition typeDefinition) { //type myInt = int
-        typeDefinition.typeExpression.accept(this);
-        mySymbolTable.enter(typeDefinition.name, new TypeEntry(typeDefinition.typeExpression.typeName));
-    }
-
-    @Override
-    public void visit(VariableDefinition variableDefinition) {
-        variableDefinition.typeExpression.accept(this);
-        globalSymTab.enter(variableDefinition.name, new VariableEntry(variableDefinition.typeExpression.typeName, false));
-    }
-
-    @Override
-    public void visit(VariableExpression variableExpression) {
-
-    }
-
-    @Override
-    public void visit(WhileStatement whileStatement) {
-
+    private Type determineBaseType(TypeExpression baseType) {
+        switch (baseType){
+            case ArrayTypeExpression arrayTypeExpression -> {
+                Type base = determineBaseType(arrayTypeExpression.baseType);
+                return new ArrayType(base, arrayTypeExpression.arraySize);
+            }
+            case NamedTypeExpression namedTypeExpression -> {
+                Entry entry = globalTable.lookup(namedTypeExpression.name);
+                return ((TypeEntry) entry).type;
+            }
+        }
     }
 
     /**

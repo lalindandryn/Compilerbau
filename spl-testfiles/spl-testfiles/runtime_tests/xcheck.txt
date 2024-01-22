@@ -1,30 +1,30 @@
-Acker.spl----------------------> passed
-bigtest.spl--------------------> passed
-bits.spl-----------------------> passed
-compound_literals.spl----------> NotPassed - Error TypeDefinition at line 5 - Not identical output message. *Bonus Assignment*
-drawTest.spl-------------------> passed
-fak.spl------------------------> passed
-gcd.spl------------------------> passed
-gol.spl------------------------> passed
-inttest.spl--------------------> passed
-lambda.spl---------------------> passed
-moreRegisters.spl--------------> passed
-multiply.spl-------------------> passed
-partind1.spl-------------------> passed
-partind2.spl-------------------> passed
-queens.spl---------------------> passed
-records.spl--------------------> NotPassed - Error TypeDefinition at line 5 - Not identical output message. *Bonus Assignment*
-reftest.spl--------------------> passed
-sierpinski.spl-----------------> passed
-swap.spl-----------------------> passed
-test1.spl----------------------> passed
-test2.spl----------------------> passed
-test3.spl----------------------> passed
-test4.spl----------------------> passed
-test5.spl----------------------> passed
-test7.spl----------------------> passed
-test8.spl----------------------> passed
-test9.spl----------------------> passed
-threedim.spl-------------------> passed
-twodim.spl---------------------> passed
-value_semantics.spl------------> NotPassed - Error TypeDefinition at line 5 - Not identical output message. *Bonus Assignment*
+Acker.spl----------------------> passed -> absyn + table
+bigtest.spl--------------------> passed -> absyn - table
+bits.spl-----------------------> passed -> absyn + table
+compound_literals.spl----------> FOR BONUS TEST
+drawTest.spl-------------------> passed -> absyn + table
+fak.spl------------------------> passed -> absyn + table
+gcd.spl------------------------> passed -> absyn + table
+gol.spl------------------------> passed -> absyn + table
+inttest.spl--------------------> passed -> absyn + table
+lambda.spl---------------------> passed -> absyn + table
+moreRegisters.spl--------------> passed -> absyn + table
+multiply.spl-------------------> passed -> absyn + table
+partind1.spl-------------------> passed -> absyn + table
+partind2.spl-------------------> passed -> absyn + table
+queens.spl---------------------> passed -> absyn + table
+records.spl--------------------> FOR BONUS TEST
+reftest.spl--------------------> passed -> absyn + table
+sierpinski.spl-----------------> passed -> absyn + table
+swap.spl-----------------------> passed -> absyn + table
+test1.spl----------------------> passed -> absyn + table
+test2.spl----------------------> passed -> absyn + table
+test3.spl----------------------> passed -> absyn + table
+test4.spl----------------------> passed -> absyn + table
+test5.spl----------------------> passed -> absyn + table
+test7.spl----------------------> passed -> absyn + table
+test8.spl----------------------> passed -> absyn + table
+test9.spl----------------------> passed -> absyn + table
+threedim.spl-------------------> passed -> absyn + table
+twodim.spl---------------------> passed -> absyn + table
+value_semantics.spl------------> FOR BONUS TEST
