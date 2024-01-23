@@ -50,7 +50,17 @@ public class ProcedureBodyChecker {
                     for(var statement : procedureDefinition.body){
                         switch (statement){
                             case AssignStatement assignStatement -> {
-                                
+                                Type targetType = null, valueType = null;
+                                switch (assignStatement.target){
+                                    case ArrayAccess arrayAccess -> {
+                                    }
+                                    case NamedVariable namedVariable -> {
+                                        entry = globalTable.lookup(namedVariable.name);
+                                        if(entry == null){
+                                            throw SplError.UndefinedIdentifier(namedVariable.position, namedVariable.name);
+                                        }
+                                    }
+                                }
                             }
                             case CallStatement callStatement -> {
                                 entry = globalTable.lookup(callStatement.procedureName);
