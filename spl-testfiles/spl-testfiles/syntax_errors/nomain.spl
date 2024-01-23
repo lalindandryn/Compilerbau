@@ -1,3 +1,8 @@
+type a = int;
+
 proc main(){
+   var b : int;
+   var x : b;
    x := 5;
 }
+

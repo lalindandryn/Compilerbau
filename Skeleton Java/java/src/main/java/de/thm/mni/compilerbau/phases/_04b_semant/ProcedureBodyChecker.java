@@ -47,16 +47,34 @@ public class ProcedureBodyChecker {
         for(var globalDeclaration : program.definitions){
             switch (globalDeclaration){
                 case ProcedureDefinition procedureDefinition -> {
+                    /*
+                    for(var variableDef : procedureDefinition.variables){
+                       switch (variableDef.typeExpression) {
+
+                           case ArrayTypeExpression arrayTypeExpression -> {
+                           }
+                           case NamedTypeExpression namedTypeExpression -> {
+
+                               entry = globalTable.lookup(namedTypeExpression.name);
+                               //masih error yang ini karena masuknya masih ke undefined
+                               if(entry == null) {
+                                   throw SplError.UndefinedIdentifier(namedTypeExpression.position, namedTypeExpression.name);
+                               }
+                               if(entry.getClass() != TypeEntry.class) {
+                                   throw SplError.NotAType(namedTypeExpression.position, namedTypeExpression.name);
+                               }
+                           }
+                       }
+                    }*/
                     for(var statement : procedureDefinition.body){
                         switch (statement){
                             case AssignStatement assignStatement -> {
-                                Type targetType = null, valueType = null;
                                 switch (assignStatement.target){
                                     case ArrayAccess arrayAccess -> {
                                     }
                                     case NamedVariable namedVariable -> {
                                         entry = globalTable.lookup(namedVariable.name);
-                                        if(entry == null){
+                                        if(entry == null) {
                                             throw SplError.UndefinedIdentifier(namedVariable.position, namedVariable.name);
                                         }
                                     }

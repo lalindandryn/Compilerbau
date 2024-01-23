@@ -63,7 +63,7 @@ public class TableBuilder {
                     printSymbolTableAtEndOfProcedure(procedureDefinition.name, new ProcedureEntry(localTable, listOfParams));*/
                 }
                 case TypeDefinition typeDefinition ->{
-                    dataTypeSwitcher(typeDefinition.typeExpression);
+                    dataTypeSwitcher(typeDefinition.typeExpression,globalTable);
                     globalTable.enter(typeDefinition.name, new TypeEntry(dataType));
                 }
             }
@@ -76,13 +76,13 @@ public class TableBuilder {
                     localTable = new SymbolTable(globalTable);
                     listOfParams = new ArrayList<>();
                     for(var parameter: procedureDefinition.parameters){
-                        dataTypeSwitcher(parameter.typeExpression);
+                        dataTypeSwitcher(parameter.typeExpression, localTable);
                         localTable.enter(parameter.name, new VariableEntry(dataType, parameter.isReference));
                         listOfParams.add(new ParameterType(dataType, parameter.isReference));
                     }
 
                     for(var variable: procedureDefinition.variables){
-                        dataTypeSwitcher(variable.typeExpression);
+                        dataTypeSwitcher(variable.typeExpression,localTable);
                         localTable.enter(variable.name, new VariableEntry(dataType, false));
                     }
 
@@ -100,15 +100,19 @@ public class TableBuilder {
         return globalTable;
     }
 
-    private Type dataTypeSwitcher(TypeExpression typeExpression){
+    //Review
+    private Type dataTypeSwitcher(TypeExpression typeExpression, SymbolTable table){
         switch (typeExpression){
             case ArrayTypeExpression arrayTypeExpression -> {
                 baseType = determineBaseType(arrayTypeExpression.baseType);
                 dataType = new ArrayType(baseType, arrayTypeExpression.arraySize);
             }
             case NamedTypeExpression namedTypeExpression -> {
-                Entry entry = globalTable.lookup(namedTypeExpression.name);
-                if(!(entry instanceof TypeEntry)){
+                Entry entry = table.lookup(namedTypeExpression.name);
+                if(entry == null) {
+                    throw SplError.UndefinedIdentifier(namedTypeExpression.position, namedTypeExpression.name);
+                }
+                if(entry.getClass() != TypeEntry.class) {
                     throw SplError.NotAType(namedTypeExpression.position, namedTypeExpression.name);
                 }
                 dataType = ((TypeEntry) entry).type;
