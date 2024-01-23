@@ -44,7 +44,23 @@ public class TableBuilder {
         for(var globalDeclaration: program.definitions){
             switch (globalDeclaration){
                 case ProcedureDefinition procedureDefinition -> {
-                    //empty
+                    //This answer is the closest to eco32 for esp. file bigtest.spl
+
+                    /*localTable = new SymbolTable(globalTable);
+                    listOfParams = new ArrayList<>();
+                    for(var parameter: procedureDefinition.parameters){
+                        dataTypeSwitcher(parameter.typeExpression);
+                        localTable.enter(parameter.name, new VariableEntry(dataType, parameter.isReference));
+                        listOfParams.add(new ParameterType(dataType, parameter.isReference));
+                    }
+
+                    for(var variable: procedureDefinition.variables){
+                        dataTypeSwitcher(variable.typeExpression);
+                        localTable.enter(variable.name, new VariableEntry(dataType, false));
+                    }
+
+                    globalTable.enter(procedureDefinition.name, new ProcedureEntry(localTable, listOfParams));
+                    printSymbolTableAtEndOfProcedure(procedureDefinition.name, new ProcedureEntry(localTable, listOfParams));*/
                 }
                 case TypeDefinition typeDefinition ->{
                     dataTypeSwitcher(typeDefinition.typeExpression);
@@ -54,6 +70,7 @@ public class TableBuilder {
         }
 
         for(var globalDeclaration: program.definitions){
+            // This answer is by the tutor expected one, but it has a bit diff to eco32.
             switch (globalDeclaration){
                 case ProcedureDefinition procedureDefinition -> {
                     localTable = new SymbolTable(globalTable);
@@ -70,7 +87,9 @@ public class TableBuilder {
                     }
 
                     globalTable.enter(procedureDefinition.name, new ProcedureEntry(localTable, listOfParams));
-                    printSymbolTableAtEndOfProcedure(procedureDefinition.name, new ProcedureEntry(localTable, listOfParams));
+                    if(this.options.phaseOption == CommandLineOptions.PhaseOption.TABLES) {
+                        printSymbolTableAtEndOfProcedure(procedureDefinition.name, new ProcedureEntry(localTable, listOfParams));
+                    }
                 }
                 case TypeDefinition typeDefinition -> {
                     //empty
