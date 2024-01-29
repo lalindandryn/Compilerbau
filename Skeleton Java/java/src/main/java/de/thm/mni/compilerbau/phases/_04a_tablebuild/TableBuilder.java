@@ -82,6 +82,9 @@ public class TableBuilder {
                     }
 
                     for(var variable: procedureDefinition.variables){
+                        if(localTable.lookup(variable.name) != null){ // Error code 103
+                            throw SplError.RedefinitionOfIdentifier(variable.position, variable.name);
+                        }
                         dataTypeSwitcher(variable.typeExpression, localTable);
                         localTable.enter(variable.name, new VariableEntry(dataType, false));
                     }
