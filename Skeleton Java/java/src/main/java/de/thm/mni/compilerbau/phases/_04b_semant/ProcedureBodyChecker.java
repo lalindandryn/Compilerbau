@@ -28,37 +28,46 @@ public class ProcedureBodyChecker {
 
     Program program;
     private Type dataType, baseType;
+    private SymbolTable localTable;
 
     public void checkProcedures(Program program, SymbolTable globalTable) {
         //TODO (assignment 4b): Check all procedure bodies for semantic errors
         Entry entry = globalTable.lookup(new Identifier("main"));
-        if(entry == null){
+
+        if(entry == null){ //Error Code 125
             throw SplError.MainIsMissing();
         }
 
-        if(entry.getClass() != ProcedureEntry.class){
+        if(entry.getClass() != ProcedureEntry.class){ //Error Code 126
             throw SplError.MainIsNotAProcedure();
         }
 
-        if(!(((ProcedureEntry) entry).parameterTypes.isEmpty())){
+        if(!(((ProcedureEntry) entry).parameterTypes.isEmpty())){ //Error Code 127
             throw SplError.MainMustNotHaveParameters();
         }
 
         for(var globalDeclaration : program.definitions){
             switch (globalDeclaration){
                 case ProcedureDefinition procedureDefinition -> {
+                    entry = globalTable.lookup(procedureDefinition.name);
+                    SymbolTable temp = localTable;
+                    localTable = new SymbolTable(((ProcedureEntry) entry).localTable);
                     for(var statement : procedureDefinition.body){
                         switch (statement){
                             case AssignStatement assignStatement -> {
-                                Type targetType = null, valueType = null;
                                 switch (assignStatement.target){
                                     case ArrayAccess arrayAccess -> {
                                     }
                                     case NamedVariable namedVariable -> {
-                                        entry = globalTable.lookup(namedVariable.name);
-                                        if(entry == null){
+                                        entry = localTable.lookup(namedVariable.name);
+
+                                        if(entry == null) {
                                             throw SplError.UndefinedIdentifier(namedVariable.position, namedVariable.name);
+                                        }else if(!(entry instanceof VariableEntry)){
+                                            //Error Code 122
+                                            throw SplError.NotAVariable(namedVariable.position, namedVariable.name);
                                         }
+
                                     }
                                 }
                             }
@@ -78,42 +87,12 @@ public class ProcedureBodyChecker {
                             }
                         }
                     }
+
+                    localTable = temp;
                 }
                 case TypeDefinition typeDefinition -> {
-                    //dataTypeSwitcher(typeDefinition.typeExpression, globalTable);
                 }
             }
         }
     }
-
-    private Type dataTypeSwitcher(TypeExpression typeExpression, SymbolTable globalTable){
-        switch (typeExpression){
-            case ArrayTypeExpression arrayTypeExpression -> {
-                baseType = determineBaseType(arrayTypeExpression.baseType, globalTable);
-                dataType = new ArrayType(baseType, arrayTypeExpression.arraySize);
-            }
-            case NamedTypeExpression namedTypeExpression -> {
-                Entry entry = globalTable.lookup(namedTypeExpression.name);
-                if(!(entry instanceof TypeEntry)){
-                    throw SplError.NotAType(namedTypeExpression.position, namedTypeExpression.name);
-                }
-                dataType = ((TypeEntry) entry).type;
-            }
-        }
-        return  dataType;
-    }
-
-    private Type determineBaseType(TypeExpression baseType, SymbolTable globalTable) {
-        switch (baseType){
-            case ArrayTypeExpression arrayTypeExpression -> {
-                Type base = determineBaseType(arrayTypeExpression.baseType, globalTable);
-                return new ArrayType(base, arrayTypeExpression.arraySize);
-            }
-            case NamedTypeExpression namedTypeExpression -> {
-                Entry entry = globalTable.lookup(namedTypeExpression.name);
-                return ((TypeEntry) entry).type;
-            }
-        }
-    }
-
 }

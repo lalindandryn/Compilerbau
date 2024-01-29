@@ -44,18 +44,18 @@ public class TableBuilder {
         for(var globalDeclaration: program.definitions){
             switch (globalDeclaration){
                 case ProcedureDefinition procedureDefinition -> {
-                    //This answer is the closest to eco32 for esp. file bigtest.spl
+                    //This answer is the closest/identic to eco32 for esp. file bigtest.spl
 
                     /*localTable = new SymbolTable(globalTable);
                     listOfParams = new ArrayList<>();
                     for(var parameter: procedureDefinition.parameters){
-                        dataTypeSwitcher(parameter.typeExpression);
+                        dataTypeSwitcher(parameter.typeExpression, localTable);
                         localTable.enter(parameter.name, new VariableEntry(dataType, parameter.isReference));
                         listOfParams.add(new ParameterType(dataType, parameter.isReference));
                     }
 
                     for(var variable: procedureDefinition.variables){
-                        dataTypeSwitcher(variable.typeExpression);
+                        dataTypeSwitcher(variable.typeExpression, localTable);
                         localTable.enter(variable.name, new VariableEntry(dataType, false));
                     }
 
@@ -63,7 +63,7 @@ public class TableBuilder {
                     printSymbolTableAtEndOfProcedure(procedureDefinition.name, new ProcedureEntry(localTable, listOfParams));*/
                 }
                 case TypeDefinition typeDefinition ->{
-                    dataTypeSwitcher(typeDefinition.typeExpression);
+                    dataTypeSwitcher(typeDefinition.typeExpression, globalTable);
                     globalTable.enter(typeDefinition.name, new TypeEntry(dataType));
                 }
             }
@@ -76,13 +76,13 @@ public class TableBuilder {
                     localTable = new SymbolTable(globalTable);
                     listOfParams = new ArrayList<>();
                     for(var parameter: procedureDefinition.parameters){
-                        dataTypeSwitcher(parameter.typeExpression);
+                        dataTypeSwitcher(parameter.typeExpression, localTable);
                         localTable.enter(parameter.name, new VariableEntry(dataType, parameter.isReference));
                         listOfParams.add(new ParameterType(dataType, parameter.isReference));
                     }
 
                     for(var variable: procedureDefinition.variables){
-                        dataTypeSwitcher(variable.typeExpression);
+                        dataTypeSwitcher(variable.typeExpression, localTable);
                         localTable.enter(variable.name, new VariableEntry(dataType, false));
                     }
 
@@ -100,18 +100,19 @@ public class TableBuilder {
         return globalTable;
     }
 
-    private Type dataTypeSwitcher(TypeExpression typeExpression){
+    private Type dataTypeSwitcher(TypeExpression typeExpression, SymbolTable table){
         switch (typeExpression){
             case ArrayTypeExpression arrayTypeExpression -> {
                 baseType = determineBaseType(arrayTypeExpression.baseType);
                 dataType = new ArrayType(baseType, arrayTypeExpression.arraySize);
             }
             case NamedTypeExpression namedTypeExpression -> {
-                Entry entry = globalTable.lookup(namedTypeExpression.name);
-                if(!(entry instanceof TypeEntry)){
+                Entry entry = table.lookup(namedTypeExpression.name);
+                if(!(entry instanceof TypeEntry)){ //Error code 102
                     throw SplError.NotAType(namedTypeExpression.position, namedTypeExpression.name);
+                }else if(entry != null){
+                    dataType = ((TypeEntry) entry).type;
                 }
-                dataType = ((TypeEntry) entry).type;
             }
         }
         return  dataType;
