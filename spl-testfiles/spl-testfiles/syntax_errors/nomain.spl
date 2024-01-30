@@ -1,5 +1,9 @@
 type a = int;
+type b = array [2] of int;
+proc testmissmatch(x: b){}
 proc main(){
-   var x: a;
-   x := 5;
+   var x: b;
+   var y: int;
+   y := 1;
+   testmissmatch(y); //Non-reference param
 }

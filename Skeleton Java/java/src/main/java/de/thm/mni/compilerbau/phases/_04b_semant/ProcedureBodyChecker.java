@@ -12,6 +12,12 @@ import de.thm.mni.compilerbau.types.Type;
 import de.thm.mni.compilerbau.utils.NotImplemented;
 import de.thm.mni.compilerbau.utils.SplError;
 
+import java.lang.annotation.Target;
+import java.security.spec.ECField;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * This class is used to check if the currently compiled SPL program is semantically valid.
  * The body of each procedure has to be checked, consisting of {@link Statement}s, {@link Variable}s and {@link Expression}s.
@@ -28,10 +34,11 @@ public class ProcedureBodyChecker {
 
     Program program;
     private Type dataType, baseType;
-    private SymbolTable localTable;
+    private SymbolTable localTable, globalTable;
 
     public void checkProcedures(Program program, SymbolTable globalTable) {
         //TODO (assignment 4b): Check all procedure bodies for semantic errors
+        this.globalTable = globalTable;
         Entry entry = globalTable.lookup(new Identifier("main"));
 
         if(entry == null){ //Error Code 125
@@ -53,39 +60,7 @@ public class ProcedureBodyChecker {
                     SymbolTable temp = localTable;
                     localTable = new SymbolTable(((ProcedureEntry) entry).localTable);
                     for(var statement : procedureDefinition.body){
-                        switch (statement){
-                            case AssignStatement assignStatement -> {
-                                switch (assignStatement.target){
-                                    case ArrayAccess arrayAccess -> {
-                                    }
-                                    case NamedVariable namedVariable -> {
-                                        entry = localTable.lookup(namedVariable.name);
-
-                                        if(entry == null) {
-                                            throw SplError.UndefinedIdentifier(namedVariable.position, namedVariable.name);
-                                        }else if(!(entry instanceof VariableEntry)){
-                                            //Error Code 122
-                                            throw SplError.NotAVariable(namedVariable.position, namedVariable.name);
-                                        }
-
-                                    }
-                                }
-                            }
-                            case CallStatement callStatement -> {
-                                entry = globalTable.lookup(callStatement.procedureName);
-                                if(entry == null){
-                                    throw SplError.CallOfNonProcedure(callStatement.position, callStatement.procedureName);
-                                }
-                            }
-                            case CompoundStatement compoundStatement -> {
-                            }
-                            case EmptyStatement emptyStatement -> {
-                            }
-                            case IfStatement ifStatement -> {
-                            }
-                            case WhileStatement whileStatement -> {
-                            }
-                        }
+                        checkStatement(statement);
                     }
 
                     localTable = temp;
@@ -94,5 +69,223 @@ public class ProcedureBodyChecker {
                 }
             }
         }
+    }
+
+    private void checkStatement(Statement statement){
+        switch (statement){
+            case AssignStatement assignStatement -> {
+                checkStatement(assignStatement);
+            }
+            case CallStatement callStatement -> {
+                checkStatement(callStatement);
+            }
+            case CompoundStatement compoundStatement -> {
+            }
+            case EmptyStatement emptyStatement -> {
+            }
+            case IfStatement ifStatement -> {
+                checkStatement(ifStatement);
+                checkStatement(ifStatement.thenPart);
+                if(ifStatement.elsePart != null){
+                    checkStatement(ifStatement.elsePart);
+                }
+            }
+            case WhileStatement whileStatement -> {
+                checkStatement(whileStatement);
+            }
+        }
+    }
+    private void checkStatement(AssignStatement assignStatement){
+        Entry targetEntry = null, valueEntry = null;
+        isNullVarEntry(assignStatement.target);
+        switch (assignStatement.target){
+            case ArrayAccess arrayAccess -> {}
+            case NamedVariable namedVariable -> {
+                targetEntry = localTable.lookup(namedVariable.name);
+                if(!(targetEntry instanceof VariableEntry)){
+                    //Error Code 122
+                    throw SplError.NotAVariable(namedVariable.position, namedVariable.name);
+                }
+            }
+        }
+        switch (assignStatement.value){
+            case BinaryExpression binaryExpression -> {
+            }
+            case IntLiteral intLiteral -> {
+                if(((VariableEntry) targetEntry).type != PrimitiveType.intType){
+                    throw SplError.IllegalAssignment(assignStatement.position, ((VariableEntry) targetEntry).type, PrimitiveType.intType);
+                }
+            }
+            case UnaryExpression unaryExpression -> {
+            }
+            case VariableExpression variableExpression -> {
+                isNullVarEntry(variableExpression.variable);
+                switch (variableExpression.variable){
+                    case ArrayAccess arrayAccess -> {}
+                    case NamedVariable namedVariable -> {
+                        valueEntry = localTable.lookup(namedVariable.name);
+                        if(((VariableEntry) valueEntry).type != ((VariableEntry) targetEntry).type){ //Error Code 108
+                            throw SplError.IllegalAssignment(assignStatement.position, ((VariableEntry) targetEntry).type, ((VariableEntry) valueEntry).type);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    private void checkStatement(CallStatement callStatement){
+        //TODO Setengah jadi need code refactor?
+        List<ParameterType> args = new ArrayList<>();
+        Entry paramType = globalTable.lookup(callStatement.procedureName);
+        Position missPosition = null;
+        if(localTable.lookup(callStatement.procedureName) != null && !(localTable.lookup(callStatement.procedureName) instanceof ProcedureEntry)){ //Error Code 113
+            throw SplError.CallOfNonProcedure(callStatement.position, callStatement.procedureName);
+        }else if(globalTable.lookup(callStatement.procedureName) != null && !(globalTable.lookup(callStatement.procedureName) instanceof ProcedureEntry)){
+            throw SplError.CallOfNonProcedure(callStatement.position, callStatement.procedureName);
+        }else if(localTable.lookup(callStatement.procedureName) == null || globalTable.lookup(callStatement.procedureName) == null){
+            throw SplError.UndefinedIdentifier(callStatement.position, callStatement.procedureName);
+        }
+        for(var arguments : callStatement.arguments){
+            switch (arguments){
+                case BinaryExpression binaryExpression -> {
+
+                }
+                case IntLiteral intLiteral -> {
+                    args.add(new ParameterType(PrimitiveType.intType, false));
+                }
+                case UnaryExpression unaryExpression -> {
+                    args.add(new ParameterType(PrimitiveType.intType, false));
+                }
+                case VariableExpression variableExpression -> {
+                    isNullVarEntry(variableExpression.variable);
+                    switch (variableExpression.variable){
+                        case ArrayAccess arrayAccess -> {
+                        }
+                        case NamedVariable namedVariable -> {
+                            args.add(new ParameterType(((VariableEntry) localTable.lookup(namedVariable.name)).type, ((VariableEntry) localTable.lookup(namedVariable.name)).isReference));
+                            for(int i = 0; i < ((ProcedureEntry) paramType).parameterTypes.size(); i++){
+                                if(args.get(i).type != ((ProcedureEntry) paramType).parameterTypes.get(i).type){
+                                    missPosition = namedVariable.position;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if(((ProcedureEntry) paramType).parameterTypes.size() != args.size()){//Error Code 116
+            throw SplError.ArgumentCountMismatch(callStatement.position, callStatement.procedureName, ((ProcedureEntry) paramType).parameterTypes.size(), args.size());
+        }else{
+            for(int i = 0; i < ((ProcedureEntry) paramType).parameterTypes.size(); i++){
+                if(args.get(i).type != ((ProcedureEntry) paramType).parameterTypes.get(i).type){ //Error Code 114
+                    throw SplError.ArgumentTypeMismatch(missPosition, callStatement.procedureName, (i+1), ((ProcedureEntry) paramType).parameterTypes.get(i).type, args.get(i).type);
+                }
+            }
+        }
+    }
+    private void checkStatement(IfStatement ifStatement){
+        Type leftDataType = null, rightDataType = null;
+        switch (ifStatement.condition){
+            case BinaryExpression binaryExpression -> {
+                leftDataType = operandType(binaryExpression.leftOperand);
+                rightDataType = operandType(binaryExpression.rightOperand);
+                if(leftDataType != rightDataType){// Error Code 118
+                    throw SplError.OperandTypeMismatch(binaryExpression.position, binaryExpression.operator, leftDataType, rightDataType);
+                }
+                if(binaryExpression.operator.isArithmetic()){ //Error Code 110
+                    throw SplError.IfConditionMustBeBoolean(ifStatement.position, PrimitiveType.intType);
+                }
+            }
+            case IntLiteral intLiteral -> {
+                throw SplError.IfConditionMustBeBoolean(ifStatement.position, PrimitiveType.intType);
+            }
+            case UnaryExpression unaryExpression -> {
+                throw SplError.IfConditionMustBeBoolean(ifStatement.position, PrimitiveType.intType);
+            }
+            case VariableExpression variableExpression -> {
+                isNullVarEntry(variableExpression.variable);
+                switch (variableExpression.variable){
+                    case ArrayAccess arrayAccess -> {
+                        throw SplError.IfConditionMustBeBoolean(ifStatement.position, PrimitiveType.intType);
+                    }
+                    case NamedVariable namedVariable -> {
+                        throw SplError.IfConditionMustBeBoolean(ifStatement.position, ((VariableEntry) localTable.lookup(namedVariable.name)).type);
+                    }
+                }
+            }
+        }
+    }
+    private void checkStatement(WhileStatement statement){
+        Type leftDataType = null, rightDataType = null;
+        switch (statement.condition){
+            case BinaryExpression binaryExpression -> {
+                leftDataType = operandType(binaryExpression.leftOperand);
+                rightDataType = operandType(binaryExpression.rightOperand);
+                if(leftDataType != rightDataType){// Error Code 118
+                    throw SplError.OperandTypeMismatch(binaryExpression.position, binaryExpression.operator, leftDataType, rightDataType);
+                }
+                if(binaryExpression.operator.isArithmetic()){ //Error Code 111
+                    throw SplError.WhileConditionMustBeBoolean(statement.position, PrimitiveType.intType);
+                }
+            }
+            case IntLiteral intLiteral -> {
+                throw SplError.WhileConditionMustBeBoolean(statement.position, PrimitiveType.intType);
+            }
+            case UnaryExpression unaryExpression -> {
+                throw SplError.WhileConditionMustBeBoolean(statement.position, PrimitiveType.intType);
+            }
+            case VariableExpression variableExpression -> {
+                isNullVarEntry(variableExpression.variable);
+                switch (variableExpression.variable){
+                    case ArrayAccess arrayAccess -> {
+                        throw SplError.WhileConditionMustBeBoolean(statement.position, PrimitiveType.intType);
+                    }
+                    case NamedVariable namedVariable -> {
+                        throw SplError.WhileConditionMustBeBoolean(statement.position, ((VariableEntry) localTable.lookup(namedVariable.name)).type);
+                    }
+                }
+            }
+        }
+    }
+    private void isNullVarEntry(Variable variable){
+        switch (variable){
+            case ArrayAccess arrayAccess -> {
+                isNullVarEntry(arrayAccess.array);
+            }
+            case NamedVariable namedVariable -> {
+                if(localTable.lookup(namedVariable.name) == null){
+                    throw SplError.UndefinedIdentifier(namedVariable.position, namedVariable.name);
+                }
+
+            }
+        }
+    }
+    private Type operandType(Expression operand){
+        Type type = null;
+        switch (operand){
+            case BinaryExpression expression -> {
+                //TODO multiple binary Expression
+                if(expression.operator.isEqualityOperator() || expression.operator.isComparison()){
+                    type = PrimitiveType.boolType;
+                }
+            }
+            case IntLiteral intLiteral -> {
+                type = PrimitiveType.intType;
+            }
+            case UnaryExpression unaryExpression -> {
+                type = PrimitiveType.intType;
+            }
+            case VariableExpression variableExpression -> {
+                isNullVarEntry(variableExpression.variable);
+                switch (variableExpression.variable){
+                    case ArrayAccess arrayAccess -> {
+                        type = PrimitiveType.intType;
+                    }
+                    case NamedVariable namedVariable -> {
+                        type = ((VariableEntry) localTable.lookup(namedVariable.name)).type;
+                    }
+                }
+            }
+        }
+        return type;
     }
 }

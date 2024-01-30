@@ -85,6 +85,8 @@ public class TableBuilder {
                         if(localTable.lookup(variable.name) != null){ // Error code 103
                             throw SplError.RedefinitionOfIdentifier(variable.position, variable.name);
                         }
+
+
                         dataTypeSwitcher(variable.typeExpression, localTable);
                         localTable.enter(variable.name, new VariableEntry(dataType, false));
                     }
@@ -111,6 +113,9 @@ public class TableBuilder {
             }
             case NamedTypeExpression namedTypeExpression -> {
                 Entry entry = table.lookup(namedTypeExpression.name);
+                if(entry == null){ //Error code 101
+                    throw SplError.UndefinedIdentifier(namedTypeExpression.position, namedTypeExpression.name);
+                }
                 if(!(entry instanceof TypeEntry)){ //Error code 102
                     throw SplError.NotAType(namedTypeExpression.position, namedTypeExpression.name);
                 }else if(entry != null){
