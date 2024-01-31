@@ -13,6 +13,7 @@ import de.thm.mni.compilerbau.utils.NotImplemented;
 import de.thm.mni.compilerbau.utils.SplError;
 
 import java.lang.annotation.Target;
+import java.lang.reflect.Array;
 import java.security.spec.ECField;
 import java.util.*;
 import java.util.stream.StreamSupport;
@@ -175,65 +176,87 @@ public class ProcedureBodyChecker {
             throw SplError.ArgumentCountMismatch(callStatement.position, callStatement.procedureName, countParams, countArgs);
         }
     }
+
     private void checkStatement(IfStatement ifStatement){
-        Type leftDataType = null, rightDataType = null;
-        switch (ifStatement.condition){
-            case BinaryExpression binaryExpression -> {
-                leftDataType = operandType(binaryExpression.leftOperand);
-                rightDataType = operandType(binaryExpression.rightOperand);
-                if(leftDataType != rightDataType){// Error Code 118
-                    throw SplError.OperandTypeMismatch(binaryExpression.position, binaryExpression.operator, leftDataType, rightDataType);
-                }
-                if(binaryExpression.operator.isArithmetic()){ //Error Code 110
-                    throw SplError.IfConditionMustBeBoolean(ifStatement.position, PrimitiveType.intType);
-                }
-            }
-            case IntLiteral intLiteral -> {
-                throw SplError.IfConditionMustBeBoolean(ifStatement.position, PrimitiveType.intType);
-            }
-            case UnaryExpression unaryExpression -> {
-                throw SplError.IfConditionMustBeBoolean(ifStatement.position, PrimitiveType.intType);
-            }
-            case VariableExpression variableExpression -> {
-                isNullVarEntry(variableExpression.variable);
-                switch (variableExpression.variable){
-                    case ArrayAccess arrayAccess -> {
+        Expression condition = ifStatement.condition;
+        int conditionCounter = 0;
+        while (condition != null){
+            switch (condition){
+                case BinaryExpression binaryExpression -> {
+                    if(operandType(binaryExpression.leftOperand) != operandType(binaryExpression.rightOperand)){// Error Code 118
+                        throw SplError.OperandTypeMismatch(binaryExpression.position, binaryExpression.operator, operandType(binaryExpression.leftOperand), operandType(binaryExpression.rightOperand));
+                    }
+                    if(conditionCounter < 1 && binaryExpression.operator.isArithmetic()){ //Error Code 110
                         throw SplError.IfConditionMustBeBoolean(ifStatement.position, PrimitiveType.intType);
                     }
-                    case NamedVariable namedVariable -> {
-                        throw SplError.IfConditionMustBeBoolean(ifStatement.position, ((VariableEntry) localTable.lookup(namedVariable.name)).type);
+
+                    if(binaryExpression.leftOperand instanceof BinaryExpression){
+                        condition = binaryExpression.leftOperand;
+                    }else if(binaryExpression.rightOperand instanceof BinaryExpression){
+                        condition = binaryExpression.rightOperand;
+                    }else{
+                        condition = null;
+                    }
+                    conditionCounter++;
+                }
+                case IntLiteral intLiteral -> {
+                    throw SplError.IfConditionMustBeBoolean(ifStatement.position, PrimitiveType.intType);
+                }
+                case UnaryExpression unaryExpression -> {
+                    throw SplError.IfConditionMustBeBoolean(ifStatement.position, PrimitiveType.intType);
+                }
+                case VariableExpression variableExpression -> {
+                    isNullVarEntry(variableExpression.variable);
+                    switch (variableExpression.variable){
+                        case ArrayAccess arrayAccess -> {
+                            throw SplError.IfConditionMustBeBoolean(ifStatement.position, PrimitiveType.intType);
+                        }
+                        case NamedVariable namedVariable -> {
+                            throw SplError.IfConditionMustBeBoolean(ifStatement.position, ((VariableEntry) localTable.lookup(namedVariable.name)).type);
+                        }
                     }
                 }
             }
         }
+
     }
     private void checkStatement(WhileStatement statement){
-        Type leftDataType = null, rightDataType = null;
-        switch (statement.condition){
-            case BinaryExpression binaryExpression -> {
-                leftDataType = operandType(binaryExpression.leftOperand);
-                rightDataType = operandType(binaryExpression.rightOperand);
-                if(leftDataType != rightDataType){// Error Code 118
-                    throw SplError.OperandTypeMismatch(binaryExpression.position, binaryExpression.operator, leftDataType, rightDataType);
-                }
-                if(binaryExpression.operator.isArithmetic()){ //Error Code 111
-                    throw SplError.WhileConditionMustBeBoolean(statement.position, PrimitiveType.intType);
-                }
-            }
-            case IntLiteral intLiteral -> {
-                throw SplError.WhileConditionMustBeBoolean(statement.position, PrimitiveType.intType);
-            }
-            case UnaryExpression unaryExpression -> {
-                throw SplError.WhileConditionMustBeBoolean(statement.position, PrimitiveType.intType);
-            }
-            case VariableExpression variableExpression -> {
-                isNullVarEntry(variableExpression.variable);
-                switch (variableExpression.variable){
-                    case ArrayAccess arrayAccess -> {
+        Expression condition = statement.condition;
+        int conditionCounter = 0;
+        while (condition != null){
+            switch (condition){
+                case BinaryExpression binaryExpression -> {
+                    if(operandType(binaryExpression.leftOperand) != operandType(binaryExpression.rightOperand)){// Error Code 118
+                        throw SplError.OperandTypeMismatch(binaryExpression.position, binaryExpression.operator, operandType(binaryExpression.leftOperand), operandType(binaryExpression.rightOperand));
+                    }
+                    if(conditionCounter < 1 && binaryExpression.operator.isArithmetic()){ //Error Code 110
                         throw SplError.WhileConditionMustBeBoolean(statement.position, PrimitiveType.intType);
                     }
-                    case NamedVariable namedVariable -> {
-                        throw SplError.WhileConditionMustBeBoolean(statement.position, ((VariableEntry) localTable.lookup(namedVariable.name)).type);
+
+                    if(binaryExpression.leftOperand instanceof BinaryExpression){
+                        condition = binaryExpression.leftOperand;
+                    }else if(binaryExpression.rightOperand instanceof BinaryExpression){
+                        condition = binaryExpression.rightOperand;
+                    }else{
+                        condition = null;
+                    }
+                    conditionCounter++;
+                }
+                case IntLiteral intLiteral -> {
+                    throw SplError.WhileConditionMustBeBoolean(statement.position, PrimitiveType.intType);
+                }
+                case UnaryExpression unaryExpression -> {
+                    throw SplError.WhileConditionMustBeBoolean(statement.position, PrimitiveType.intType);
+                }
+                case VariableExpression variableExpression -> {
+                    isNullVarEntry(variableExpression.variable);
+                    switch (variableExpression.variable){
+                        case ArrayAccess arrayAccess -> {
+                            throw SplError.IfConditionMustBeBoolean(statement.position, PrimitiveType.intType);
+                        }
+                        case NamedVariable namedVariable -> {
+                            throw SplError.IfConditionMustBeBoolean(statement.position, ((VariableEntry) localTable.lookup(namedVariable.name)).type);
+                        }
                     }
                 }
             }
@@ -284,13 +307,15 @@ public class ProcedureBodyChecker {
             }
         }
     }
+
     private Type operandType(Expression operand){
         Type type = null;
         switch (operand){
             case BinaryExpression expression -> {
-                //TODO multiple binary Expression
                 if(expression.operator.isEqualityOperator() || expression.operator.isComparison()){
                     type = PrimitiveType.boolType;
+                }else if (expression.operator.isArithmetic()){
+                    type = PrimitiveType.intType;
                 }
             }
             case IntLiteral intLiteral -> {
@@ -316,3 +341,4 @@ public class ProcedureBodyChecker {
 
 
 }
+

@@ -2,7 +2,7 @@ type a = int;
 type b = array [2] of array [2] of int;
 proc testmissmatch( x: int, y: int, z: int){}
 proc main(){
-   var x: b;
+   var x: int;
    var y: int;
    var z: int;
    z := 2;
