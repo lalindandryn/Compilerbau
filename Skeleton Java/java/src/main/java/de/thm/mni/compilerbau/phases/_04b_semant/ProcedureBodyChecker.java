@@ -79,6 +79,7 @@ public class ProcedureBodyChecker {
                 checkStatement(callStatement);
             }
             case CompoundStatement compoundStatement -> {
+                checkStatement(compoundStatement);
             }
             case EmptyStatement emptyStatement -> {
             }
@@ -101,7 +102,7 @@ public class ProcedureBodyChecker {
             case ArrayAccess arrayAccess -> {}
             case NamedVariable namedVariable -> {
                 targetEntry = localTable.lookup(namedVariable.name);
-                if(!(targetEntry instanceof VariableEntry)){
+                if(!(targetEntry instanceof VariableEntry)) {
                     //Error Code 122
                     throw SplError.NotAVariable(namedVariable.position, namedVariable.name);
                 }
@@ -116,6 +117,7 @@ public class ProcedureBodyChecker {
                 }
             }
             case UnaryExpression unaryExpression -> {
+                checkUnaryExpression(unaryExpression);
             }
             case VariableExpression variableExpression -> {
                 isNullVarEntry(variableExpression.variable);
@@ -155,17 +157,18 @@ public class ProcedureBodyChecker {
             params.next();
             countParams++;
         }
+        args = callStatement.arguments.iterator();
+        params = ((ProcedureEntry) global).parameterTypes.iterator();
         while(args.hasNext() && params.hasNext()){
             Expression expression = args.next();
             ParameterType parameterType = params.next();
             if(parameterType.isReference && !(expression instanceof  VariableExpression)){
-                throw SplError.ArgumentMustBeAVariable(callStatement.position, callStatement.procedureName, i);
+                throw SplError.ArgumentMustBeAVariable(expression.position, callStatement.procedureName, i);
             }else if(expression instanceof VariableExpression){
                 if(parameterType.type != operandType(expression)){ //Error Code 114
                     throw SplError.ArgumentTypeMismatch(expression.position, callStatement.procedureName, i,parameterType.type, operandType(expression));
                 }
             }
-
             i++;
         }
         if(countArgs != countParams){ //Error Code 116
@@ -236,6 +239,38 @@ public class ProcedureBodyChecker {
             }
         }
     }
+
+    private void checkUnaryExpression(UnaryExpression expression){
+        Entry entry = null;
+        switch(expression.operand){
+
+            case BinaryExpression binaryExpression -> {
+            }
+            case IntLiteral intLiteral -> {
+            }
+            case UnaryExpression unaryExpression -> {
+                checkUnaryExpression(unaryExpression);
+            }
+            case VariableExpression variableExpression -> {
+                switch (variableExpression.variable){
+
+                    case ArrayAccess arrayAccess -> {
+
+                    }
+                    case NamedVariable namedVariable -> {
+                        entry = localTable.lookup(namedVariable.name);
+                        if(entry == null){
+                            throw SplError.UndefinedIdentifier(namedVariable.position, namedVariable.name);
+                        }
+                        if(((VariableEntry)entry).type != PrimitiveType.intType){ //Error Code 119
+                            throw SplError.OperandTypeMismatch(expression.position, expression.operator, ((VariableEntry)entry).type);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private void isNullVarEntry(Variable variable){
         switch (variable){
             case ArrayAccess arrayAccess -> {
@@ -278,4 +313,6 @@ public class ProcedureBodyChecker {
         }
         return type;
     }
+
+
 }

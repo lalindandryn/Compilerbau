@@ -1,9 +1,11 @@
 type a = int;
-type b = array [2] of int;
-proc testmissmatch(x: int, y: int, z: int){}
+type b = array [2] of array [2] of int;
+proc testmissmatch( x: int, y: int, z: int){}
 proc main(){
    var x: b;
    var y: int;
-   y := 1;
-   testmissmatch(y, y); //Non-reference param
+   var z: int;
+   z := 2;
+   y := -x[1][1];
+   testmissmatch(2, y, y); //Non-reference param
 }
