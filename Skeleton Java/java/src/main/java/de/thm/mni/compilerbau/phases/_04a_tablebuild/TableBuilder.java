@@ -77,6 +77,9 @@ public class TableBuilder {
                     listOfParams = new ArrayList<>();
                     for(var parameter: procedureDefinition.parameters){
                         dataTypeSwitcher(parameter.typeExpression, localTable);
+                        if(!parameter.isReference && dataType instanceof ArrayType){// Error Code 104
+                            throw SplError.ParameterMustBeReference(parameter.position, parameter.name, dataType);
+                        }
                         localTable.enter(parameter.name, new VariableEntry(dataType, parameter.isReference));
                         listOfParams.add(new ParameterType(dataType, parameter.isReference));
                     }
@@ -85,8 +88,6 @@ public class TableBuilder {
                         if(localTable.lookup(variable.name) != null){ // Error code 103
                             throw SplError.RedefinitionOfIdentifier(variable.position, variable.name);
                         }
-
-
                         dataTypeSwitcher(variable.typeExpression, localTable);
                         localTable.enter(variable.name, new VariableEntry(dataType, false));
                     }
@@ -110,6 +111,7 @@ public class TableBuilder {
             case ArrayTypeExpression arrayTypeExpression -> {
                 baseType = determineBaseType(arrayTypeExpression.baseType);
                 dataType = new ArrayType(baseType, arrayTypeExpression.arraySize);
+
             }
             case NamedTypeExpression namedTypeExpression -> {
                 Entry entry = table.lookup(namedTypeExpression.name);

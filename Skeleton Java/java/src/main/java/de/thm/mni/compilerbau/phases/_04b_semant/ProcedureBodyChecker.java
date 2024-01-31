@@ -14,9 +14,8 @@ import de.thm.mni.compilerbau.utils.SplError;
 
 import java.lang.annotation.Target;
 import java.security.spec.ECField;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.StreamSupport;
 
 /**
  * This class is used to check if the currently compiled SPL program is semantically valid.
@@ -134,52 +133,43 @@ public class ProcedureBodyChecker {
     }
     private void checkStatement(CallStatement callStatement){
         //TODO Setengah jadi need code refactor?
-        List<ParameterType> args = new ArrayList<>();
-        Entry paramType = globalTable.lookup(callStatement.procedureName);
-        Position missPosition = null;
-        if(localTable.lookup(callStatement.procedureName) != null && !(localTable.lookup(callStatement.procedureName) instanceof ProcedureEntry)){ //Error Code 113
+        Entry global = globalTable.lookup(callStatement.procedureName), local = localTable.lookup(callStatement.procedureName);
+        Iterator<Expression> args = callStatement.arguments.iterator();
+        Iterator<ParameterType> params = ((ProcedureEntry) global).parameterTypes.iterator();
+        int countArgs = 0, countParams = 0;
+        int i = 1;
+        if(local != null && !(local instanceof ProcedureEntry)){ //Error Code 113
             throw SplError.CallOfNonProcedure(callStatement.position, callStatement.procedureName);
-        }else if(globalTable.lookup(callStatement.procedureName) != null && !(globalTable.lookup(callStatement.procedureName) instanceof ProcedureEntry)){
+        }else if(global != null && !(global instanceof ProcedureEntry)){
             throw SplError.CallOfNonProcedure(callStatement.position, callStatement.procedureName);
-        }else if(localTable.lookup(callStatement.procedureName) == null || globalTable.lookup(callStatement.procedureName) == null){
+        }else if(local == null || global == null){
             throw SplError.UndefinedIdentifier(callStatement.position, callStatement.procedureName);
         }
-        for(var arguments : callStatement.arguments){
-            switch (arguments){
-                case BinaryExpression binaryExpression -> {
 
-                }
-                case IntLiteral intLiteral -> {
-                    args.add(new ParameterType(PrimitiveType.intType, false));
-                }
-                case UnaryExpression unaryExpression -> {
-                    args.add(new ParameterType(PrimitiveType.intType, false));
-                }
-                case VariableExpression variableExpression -> {
-                    isNullVarEntry(variableExpression.variable);
-                    switch (variableExpression.variable){
-                        case ArrayAccess arrayAccess -> {
-                        }
-                        case NamedVariable namedVariable -> {
-                            args.add(new ParameterType(((VariableEntry) localTable.lookup(namedVariable.name)).type, ((VariableEntry) localTable.lookup(namedVariable.name)).isReference));
-                            for(int i = 0; i < ((ProcedureEntry) paramType).parameterTypes.size(); i++){
-                                if(args.get(i).type != ((ProcedureEntry) paramType).parameterTypes.get(i).type){
-                                    missPosition = namedVariable.position;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        while(args.hasNext()){
+            args.next();
+            countArgs++;
         }
-        if(((ProcedureEntry) paramType).parameterTypes.size() != args.size()){//Error Code 116
-            throw SplError.ArgumentCountMismatch(callStatement.position, callStatement.procedureName, ((ProcedureEntry) paramType).parameterTypes.size(), args.size());
-        }else{
-            for(int i = 0; i < ((ProcedureEntry) paramType).parameterTypes.size(); i++){
-                if(args.get(i).type != ((ProcedureEntry) paramType).parameterTypes.get(i).type){ //Error Code 114
-                    throw SplError.ArgumentTypeMismatch(missPosition, callStatement.procedureName, (i+1), ((ProcedureEntry) paramType).parameterTypes.get(i).type, args.get(i).type);
+
+        while(params.hasNext()){
+            params.next();
+            countParams++;
+        }
+        while(args.hasNext() && params.hasNext()){
+            Expression expression = args.next();
+            ParameterType parameterType = params.next();
+            if(parameterType.isReference && !(expression instanceof  VariableExpression)){
+                throw SplError.ArgumentMustBeAVariable(callStatement.position, callStatement.procedureName, i);
+            }else if(expression instanceof VariableExpression){
+                if(parameterType.type != operandType(expression)){ //Error Code 114
+                    throw SplError.ArgumentTypeMismatch(expression.position, callStatement.procedureName, i,parameterType.type, operandType(expression));
                 }
             }
+
+            i++;
+        }
+        if(countArgs != countParams){ //Error Code 116
+            throw SplError.ArgumentCountMismatch(callStatement.position, callStatement.procedureName, countParams, countArgs);
         }
     }
     private void checkStatement(IfStatement ifStatement){

@@ -149,10 +149,10 @@ NEParameterList ::= ParameterDeclaration:head {:
                   ;
 
 ParameterDeclaration ::= IDENT:name COLON:pos IDENT:ident {:
-                                RESULT = new ParameterDefinition(new Position(posleft, posright), name, new NamedTypeExpression(new Position(posleft, posright),ident), false);
+                                RESULT = new ParameterDefinition(new Position(nameleft, nameright), name, new NamedTypeExpression(new Position(posleft, posright),ident), false);
                             :}
                        | REF IDENT:name COLON:pos IDENT:ident {:
-                                RESULT = new ParameterDefinition(new Position(posleft, posright), name, new NamedTypeExpression(new Position(posleft, posright),ident), true);
+                                RESULT = new ParameterDefinition(new Position(nameleft, nameright), name, new NamedTypeExpression(new Position(posleft, posright),ident), true);
                             :}
                        ;
 
