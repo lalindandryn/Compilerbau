@@ -96,16 +96,16 @@ public class ProcedureBodyChecker {
     }
     private void checkStatement(AssignStatement assignStatement){
         Entry targetEntry = null, valueEntry = null;
-        Type targetType = null;
+        Type valueType = null, targetType = null;
         isNullVarEntry(assignStatement.target);
         switch (assignStatement.target){
             case ArrayAccess arrayAccess -> {
                 targetEntry = arrayAccessEntry(arrayAccess);
-                targetType = ((VariableEntry) targetEntry).type;
-
+                targetType = getType(arrayAccess);
             }
             case NamedVariable namedVariable -> {
                 targetEntry = localTable.lookup(namedVariable.name);
+                targetType = ((VariableEntry) targetEntry).type;
                 if(!(targetEntry instanceof VariableEntry)) {
                     //Error Code 122
                     throw SplError.NotAVariable(namedVariable.position, namedVariable.name);
@@ -114,32 +114,75 @@ public class ProcedureBodyChecker {
         }
         switch (assignStatement.value){
             case BinaryExpression binaryExpression -> {
+                valueType = operandType(binaryExpression);
             }
             case IntLiteral intLiteral -> {
-                if(((VariableEntry) targetEntry).type != PrimitiveType.intType){
-                    throw SplError.IllegalAssignment(assignStatement.position, ((VariableEntry) targetEntry).type, PrimitiveType.intType);
-                }
+                valueType = PrimitiveType.intType;
             }
             case UnaryExpression unaryExpression -> {
+                valueType = PrimitiveType.intType;
                 checkUnaryExpression(unaryExpression, ((VariableEntry) targetEntry).type);
             }
             case VariableExpression variableExpression -> {
                 isNullVarEntry(variableExpression.variable);
                 switch (variableExpression.variable){
                     case ArrayAccess arrayAccess -> {
-                        if(!(((VariableEntry) targetEntry).type instanceof ArrayType)){//Error Code 123
+                        valueEntry =arrayAccessEntry(arrayAccess);
+                        valueType = ((VariableEntry) valueEntry).type;
+                        if(!(((VariableEntry) targetEntry).type != valueType)){//Error Code 123
                             throw SplError.IndexingNonArray(getPosition(arrayAccess), ((VariableEntry) targetEntry).type);
                         }
                     }
                     case NamedVariable namedVariable -> {
                         valueEntry = localTable.lookup(namedVariable.name);
-                        if(((VariableEntry) valueEntry).type != ((VariableEntry) targetEntry).type){ //Error Code 108
-                            throw SplError.IllegalAssignment(assignStatement.position, ((VariableEntry) targetEntry).type, ((VariableEntry) valueEntry).type);
-                        }
+                        valueType = ((VariableEntry) valueEntry).type;
                     }
                 }
             }
         }
+
+        if(targetType instanceof ArrayType && valueType instanceof ArrayType){ //Error Code 108
+            if(targetType == valueType){
+                System.out.println(targetType);
+                throw SplError.IllegalAssignment(assignStatement.position, targetType, valueType);
+            }
+        }
+
+        if(targetType != valueType || targetType != PrimitiveType.intType){ //Error Code 108
+            /*if(targetType instanceof ArrayType){
+                int loop = countValueArray(targetType, 1);
+                targetType = reduceArrayIndex(targetType, loop);
+            }else if(valueType instanceof ArrayType){
+                valueType = reduceArrayIndex(valueType, countValueArray(targetType, 1));
+            }
+
+            if(targetType != valueType){
+                throw SplError.IllegalAssignment(assignStatement.position, targetType, valueType);
+            }*/
+
+        }
+    }
+
+    private int countValueArray(Type type, int loop){
+        while(loop > 0){
+            if(type instanceof ArrayType){
+                loop++;
+                return countValueArray(((ArrayType) type).baseType, loop);
+            }else{
+                return loop;
+            }
+        }
+        return 0;
+    }
+
+    private Type reduceArrayIndex(Type type, int loop){
+        while(loop > 0){
+            if(type instanceof ArrayType){
+                loop--;
+                return reduceArrayIndex(((ArrayType) type).baseType, loop);
+            }
+        }
+        return type;
     }
     private void checkStatement(CallStatement callStatement){
         //TODO Setengah jadi need code refactor?
@@ -348,6 +391,15 @@ public class ProcedureBodyChecker {
             return getPosition((ArrayAccess) arrayAccess.array);
         }else if(arrayAccess.array instanceof NamedVariable){
             return ((NamedVariable) arrayAccess.array).position;
+        }
+        return null;
+    }
+
+    private Type getType(ArrayAccess arrayAccess){
+        if(arrayAccess.array instanceof ArrayAccess){
+            return getType((ArrayAccess) arrayAccess.array);
+        }else if(arrayAccess.array instanceof NamedVariable){
+            return ((VariableEntry) localTable.lookup(((NamedVariable) arrayAccess.array).name)).type;
         }
         return null;
     }

@@ -5,9 +5,9 @@ type d = a;
 proc testmissmatch( x: int, y: int, z: int){}
 proc main(){
    var x: d;
-   var y: c;
+   var y: b;
    var z: int;
    x := 1;
    z := 2;
-   y[0] := 1;
+   y[1][0][3] := z;
 }
