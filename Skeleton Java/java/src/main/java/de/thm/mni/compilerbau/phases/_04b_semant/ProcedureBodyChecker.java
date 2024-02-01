@@ -12,6 +12,7 @@ import de.thm.mni.compilerbau.types.Type;
 import de.thm.mni.compilerbau.utils.NotImplemented;
 import de.thm.mni.compilerbau.utils.SplError;
 
+import javax.naming.Name;
 import java.lang.annotation.Target;
 import java.lang.reflect.Array;
 import java.security.spec.ECField;
@@ -79,11 +80,8 @@ public class ProcedureBodyChecker {
             case CallStatement callStatement -> {
                 checkStatement(callStatement);
             }
-            case CompoundStatement compoundStatement -> {
-                checkStatement(compoundStatement);
-            }
-            case EmptyStatement emptyStatement -> {
-            }
+            case CompoundStatement compoundStatement -> {}
+            case EmptyStatement emptyStatement -> { }
             case IfStatement ifStatement -> {
                 checkStatement(ifStatement);
                 checkStatement(ifStatement.thenPart);
@@ -98,9 +96,14 @@ public class ProcedureBodyChecker {
     }
     private void checkStatement(AssignStatement assignStatement){
         Entry targetEntry = null, valueEntry = null;
+        Type targetType = null;
         isNullVarEntry(assignStatement.target);
         switch (assignStatement.target){
-            case ArrayAccess arrayAccess -> {}
+            case ArrayAccess arrayAccess -> {
+                targetEntry = arrayAccessEntry(arrayAccess);
+                targetType = ((VariableEntry) targetEntry).type;
+
+            }
             case NamedVariable namedVariable -> {
                 targetEntry = localTable.lookup(namedVariable.name);
                 if(!(targetEntry instanceof VariableEntry)) {
@@ -118,12 +121,16 @@ public class ProcedureBodyChecker {
                 }
             }
             case UnaryExpression unaryExpression -> {
-                checkUnaryExpression(unaryExpression);
+                checkUnaryExpression(unaryExpression, ((VariableEntry) targetEntry).type);
             }
             case VariableExpression variableExpression -> {
                 isNullVarEntry(variableExpression.variable);
                 switch (variableExpression.variable){
-                    case ArrayAccess arrayAccess -> {}
+                    case ArrayAccess arrayAccess -> {
+                        if(!(((VariableEntry) targetEntry).type instanceof ArrayType)){//Error Code 123
+                            throw SplError.IndexingNonArray(getPosition(arrayAccess), ((VariableEntry) targetEntry).type);
+                        }
+                    }
                     case NamedVariable namedVariable -> {
                         valueEntry = localTable.lookup(namedVariable.name);
                         if(((VariableEntry) valueEntry).type != ((VariableEntry) targetEntry).type){ //Error Code 108
@@ -148,7 +155,6 @@ public class ProcedureBodyChecker {
         }else if(local == null || global == null){
             throw SplError.UndefinedIdentifier(callStatement.position, callStatement.procedureName);
         }
-
         while(args.hasNext()){
             args.next();
             countArgs++;
@@ -263,7 +269,7 @@ public class ProcedureBodyChecker {
         }
     }
 
-    private void checkUnaryExpression(UnaryExpression expression){
+    private void checkUnaryExpression(UnaryExpression expression, Type targetType){
         Entry entry = null;
         switch(expression.operand){
 
@@ -272,21 +278,19 @@ public class ProcedureBodyChecker {
             case IntLiteral intLiteral -> {
             }
             case UnaryExpression unaryExpression -> {
-                checkUnaryExpression(unaryExpression);
+                checkUnaryExpression(unaryExpression, targetType);
             }
             case VariableExpression variableExpression -> {
+                isNullVarEntry(variableExpression.variable);
                 switch (variableExpression.variable){
-
                     case ArrayAccess arrayAccess -> {
-
+                        if(!(targetType instanceof ArrayType)){
+                            throw SplError.IndexingNonArray(getPosition(arrayAccess), targetType);
+                        }
                     }
                     case NamedVariable namedVariable -> {
-                        entry = localTable.lookup(namedVariable.name);
-                        if(entry == null){
-                            throw SplError.UndefinedIdentifier(namedVariable.position, namedVariable.name);
-                        }
-                        if(((VariableEntry)entry).type != PrimitiveType.intType){ //Error Code 119
-                            throw SplError.OperandTypeMismatch(expression.position, expression.operator, ((VariableEntry)entry).type);
+                        if(((VariableEntry)localTable.lookup(namedVariable.name)).type != PrimitiveType.intType){ //Error Code 119
+                            throw SplError.OperandTypeMismatch(expression.position, expression.operator, ((VariableEntry)localTable.lookup(namedVariable.name)).type);
                         }
                     }
                 }
@@ -339,6 +343,23 @@ public class ProcedureBodyChecker {
         return type;
     }
 
+    private Position getPosition(ArrayAccess arrayAccess){
+        if(arrayAccess.array instanceof ArrayAccess){
+            return getPosition((ArrayAccess) arrayAccess.array);
+        }else if(arrayAccess.array instanceof NamedVariable){
+            return ((NamedVariable) arrayAccess.array).position;
+        }
+        return null;
+    }
+
+    private Entry arrayAccessEntry(ArrayAccess arrayAccess){
+        if(arrayAccess.array instanceof ArrayAccess){
+            return arrayAccessEntry((ArrayAccess) arrayAccess.array);
+        }else if(arrayAccess.array instanceof NamedVariable){
+            return ((VariableEntry) localTable.lookup(((NamedVariable) arrayAccess.array).name));
+        }
+        return null;
+    }
 
 }
 
