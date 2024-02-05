@@ -2,12 +2,15 @@ package de.thm.mni.compilerbau.phases._05_varalloc;
 
 import de.thm.mni.compilerbau.CommandLineOptions;
 import de.thm.mni.compilerbau.absyn.*;
+import de.thm.mni.compilerbau.phases._02_03_parser.Sym;
 import de.thm.mni.compilerbau.table.ParameterType;
 import de.thm.mni.compilerbau.table.ProcedureEntry;
 import de.thm.mni.compilerbau.table.SymbolTable;
 import de.thm.mni.compilerbau.table.VariableEntry;
 import de.thm.mni.compilerbau.utils.*;
 
+import javax.swing.plaf.nimbus.State;
+import java.sql.Ref;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -24,17 +27,91 @@ public class VarAllocator {
     /**
      * @param options The options passed to the compiler
      */
+    private SymbolTable globalTable, localTable;
+    private boolean showVarAlloc;
     public VarAllocator(CommandLineOptions options) {
         this.options = options;
+        this.showVarAlloc = true;
     }
+
 
     public void allocVars(Program program, SymbolTable table) {
         //TODO (assignment 5): Allocate stack slots for all parameters and local variables
+        int count = 0;
+        while(count < 2){
+            int ast_durchgang = 0;
+            while(ast_durchgang < 2){
+                for(var globalDec : program.definitions){
+                    switch (globalDec){
+                        case ProcedureDefinition procedureDefinition -> {
+                            ProcedureEntry procEntry = (ProcedureEntry) table.lookup(procedureDefinition.name);
+                            if(ast_durchgang == 0){
+                                int offset = 0, i = 0;
+                                for(var paramDec : procedureDefinition.parameters){
+                                    VariableEntry paramEntry = (VariableEntry) procEntry.localTable.lookup(paramDec.name);
+                                    paramEntry.offset = i * REFERENCE_BYTESIZE;
+                                    procEntry.parameterTypes.get(i).offset = i * REFERENCE_BYTESIZE;
+                                    i++;
+                                }
+                                procEntry.stackLayout.argumentAreaSize = i * REFERENCE_BYTESIZE;
+                                offset = 0;
+                                for(var varDec : procedureDefinition.variables){
+                                    VariableEntry varEntry = (VariableEntry) procEntry.localTable.lookup(varDec.name);
+                                    if(varEntry.isReference){
+                                        offset -= REFERENCE_BYTESIZE;
+                                    }else{
+                                        offset -= varEntry.type.byteSize;
+                                    }
+                                    varEntry.offset = offset;
+                                }
+                                procEntry.stackLayout.localVarAreaSize = -offset;
+                            }
+                            if(ast_durchgang == 1){
+                                procEntry.stackLayout.outgoingAreaSize = null;
+                            }
+                        }
+                        case TypeDefinition typeDefinition -> {
+                        }
+                    }
+                }
+                ast_durchgang++;
+            }
 
-        throw new NotImplemented();
-
+            count++;
+        }
         //TODO: Uncomment this when the above exception is removed!
-        //if (showVarAlloc) formatVars(program, table);
+        if (showVarAlloc) formatVars(program, table);
+    }
+
+    private int statements(Statement statement, SymbolTable symbolTable){
+        switch (statement){
+            case AssignStatement assignStatement -> {
+            }
+            case CallStatement callStatement -> {
+                ProcedureEntry procEntry = (ProcedureEntry) symbolTable.lookup(((CallStatement) statement).procedureName);
+                return procEntry.stackLayout.argumentAreaSize;
+            }
+            case CompoundStatement compoundStatement -> {
+                return outgoing(((CompoundStatement) statement).statements, symbolTable);
+            }
+            case EmptyStatement emptyStatement -> {
+            }
+            case IfStatement ifStatement -> {
+                return Math.max(statements(((IfStatement) statement).thenPart, symbolTable), statements(((IfStatement) statement).elsePart, symbolTable));
+            }
+            case WhileStatement whileStatement -> {
+                return statements(((WhileStatement) statement).body, symbolTable);
+            }
+        }
+        return -1;
+    }
+
+    private int outgoing(List<Statement> statements, SymbolTable symbolTable){
+        int countOutgoing = -1;
+        for(var statement : statements){
+            countOutgoing = Math.max(countOutgoing, statements(statement, symbolTable));
+        }
+        return countOutgoing;
     }
 
     /**
