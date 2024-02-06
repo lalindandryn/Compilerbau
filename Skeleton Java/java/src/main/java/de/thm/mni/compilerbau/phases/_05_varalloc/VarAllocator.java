@@ -67,7 +67,7 @@ public class VarAllocator {
                                 procEntry.stackLayout.localVarAreaSize = -offset;
                             }
                             if(ast_durchgang == 1){
-                                procEntry.stackLayout.outgoingAreaSize = null;
+                                procEntry.stackLayout.outgoingAreaSize = outgoing(procedureDefinition.body, procEntry.localTable);
                             }
                         }
                         case TypeDefinition typeDefinition -> {
@@ -106,9 +106,9 @@ public class VarAllocator {
         return -1;
     }
 
-    private int outgoing(List<Statement> statements, SymbolTable symbolTable){
-        int countOutgoing = -1;
-        for(var statement : statements){
+    private int outgoing(List<Statement> statementList, SymbolTable symbolTable){
+        int countOutgoing = 0;
+        for(var statement : statementList){
             countOutgoing = Math.max(countOutgoing, statements(statement, symbolTable));
         }
         return countOutgoing;

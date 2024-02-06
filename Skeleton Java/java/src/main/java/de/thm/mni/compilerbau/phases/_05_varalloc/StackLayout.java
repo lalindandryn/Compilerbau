@@ -18,7 +18,10 @@ public class StackLayout {
     public int frameSize() {
         //TODO (assignment 5): Calculate the size of the stack frame
 
-        throw new NotImplemented();
+        if(outgoingAreaSize == 0){
+            return localVarAreaSize + 8;
+        }
+        return localVarAreaSize + outgoingAreaSize + 8;
     }
 
     /**
@@ -27,7 +30,10 @@ public class StackLayout {
     public int oldFramePointerOffset() {
         //TODO (assignment 5): Calculate the offset of the old frame pointer
 
-        throw new NotImplemented();
+        if(outgoingAreaSize == 0){
+            return 4;
+        }
+        return outgoingAreaSize + 4;
     }
 
     /**
@@ -36,6 +42,9 @@ public class StackLayout {
     public int oldReturnAddressOffset() {
         //TODO (assignment 5): Calculate the offset of the old return address
 
-        throw new NotImplemented();
+        if(localVarAreaSize == 0){
+            return -8;
+        }
+        return -1 * (localVarAreaSize +8);
     }
 }
