@@ -80,7 +80,7 @@ public class VarAllocator {
             count++;
         }
         //TODO: Uncomment this when the above exception is removed!
-        if (showVarAlloc) formatVars(program, table);
+        if (showVarAlloc && options.phaseOption == CommandLineOptions.PhaseOption.VARS) formatVars(program, table);
     }
 
     private int statements(Statement statement, SymbolTable symbolTable){

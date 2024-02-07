@@ -25,7 +25,7 @@ class CodePrinter {
         outputFile.printf("\t%s\t%s\n", opcode, r1);
     }
 
-    void emitInstruction(String opcode, String label) {
+    void emitInstruction(String opcode, Register register, int value, String label) {
         outputFile.printf("\t%s\t%s\n", opcode, label);
     }
 
