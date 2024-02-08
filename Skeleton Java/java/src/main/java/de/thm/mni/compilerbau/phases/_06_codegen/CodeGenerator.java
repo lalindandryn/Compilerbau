@@ -5,6 +5,7 @@ import de.thm.mni.compilerbau.absyn.*;
 import de.thm.mni.compilerbau.table.Entry;
 import de.thm.mni.compilerbau.table.ProcedureEntry;
 import de.thm.mni.compilerbau.table.SymbolTable;
+import de.thm.mni.compilerbau.table.VariableEntry;
 import de.thm.mni.compilerbau.utils.NotImplemented;
 import de.thm.mni.compilerbau.utils.SplError;
 import java_cup.runtime.Symbol;
@@ -43,9 +44,25 @@ public class CodeGenerator {
                 case ProcedureDefinition procedureDefinition -> {
                     ProcedureEntry procedureEntry = (ProcedureEntry) globalTable.lookup(procedureDefinition.name);
                     localTable = procedureEntry.localTable;
+
+                    output.emit("");
+                    output.emitExport(procedureDefinition.name.toString());
+                    output.emitLabel(procedureDefinition.name.toString());
+                    //Prepare the register for current procedure
+                    output.emitInstruction("sub", Register.STACK_POINTER, Register.STACK_POINTER, procedureEntry.stackLayout.frameSize(), "allocate frame");
+                    output.emitInstruction("stw", Register.FRAME_POINTER, Register.STACK_POINTER, procedureEntry.stackLayout.oldFramePointerOffset(), "save old frame pointer");
+                    output.emitInstruction("add", Register.FRAME_POINTER, Register.STACK_POINTER, procedureEntry.stackLayout.frameSize(), "setup new frame pointer");
+                    output.emitInstruction("stw", Register.RETURN_ADDRESS, Register.FRAME_POINTER, procedureEntry.stackLayout.oldReturnAddressOffset(), "save return register");
+
                     for(var statements : procedureDefinition.body){
                         genStatement(statements);
                     }
+
+                    //Clean current procedure's stack
+                    output.emitInstruction("ldw", Register.RETURN_ADDRESS, Register.FRAME_POINTER, procedureEntry.stackLayout.oldReturnAddressOffset(), "restore return register");
+                    output.emitInstruction("ldw", Register.FRAME_POINTER, Register.STACK_POINTER, procedureEntry.stackLayout.oldFramePointerOffset(), "restore old frame pointer");
+                    output.emitInstruction("add", Register.FRAME_POINTER, Register.FRAME_POINTER, procedureEntry.stackLayout.frameSize(), "release frame");
+                    output.emitInstruction("jr", Register.RETURN_ADDRESS, "return");
                 }
                 case TypeDefinition typeDefinition -> {
                     switch (typeDefinition.typeExpression){
@@ -63,6 +80,18 @@ public class CodeGenerator {
         Entry entry1 = null, entry2 = null, entry = null;
         switch (statement){
             case AssignStatement assignStatement -> {
+                Register targetReg = Register.FIRST_FREE_USE;
+                Register valueReg = Register.FIRST_FREE_USE.next();
+                switch (assignStatement.target){
+                    case ArrayAccess arrayAccess -> {
+                    }
+                    case NamedVariable namedVariable -> {
+                        VariableEntry namedEntry = (VariableEntry) localTable.lookup(namedVariable.name);
+                        if(targetReg.isFreeUse()){
+                            output.emitInstruction("add", targetReg, Register.FRAME_POINTER, namedEntry.offset);
+                        }
+                    }
+                }
                 switch (assignStatement.value){
                     case BinaryExpression binaryExpression -> {
                         genExpr(binaryExpression.leftOperand, firstFree);
@@ -77,13 +106,14 @@ public class CodeGenerator {
                     }
 
                     case IntLiteral intLiteral -> {
-                        genIntLit(intLiteral);
+                        valueReg = genIntLit(intLiteral, valueReg);
                     }
                     case UnaryExpression unaryExpression -> {
                     }
                     case VariableExpression variableExpression -> {
                     }
                 }
+                output.emitInstruction("stw", valueReg, targetReg, Register.NULL);
             }
             case CallStatement callStatement -> {
             }
@@ -124,7 +154,7 @@ public class CodeGenerator {
                 switchOP(binaryExpression.operator, reg, rightOP);
             }
             case IntLiteral intLiteral -> {
-                genIntLit(intLiteral);
+                //genIntLit(intLiteral);
             }
             case UnaryExpression unaryExpression -> {
             }
@@ -133,10 +163,11 @@ public class CodeGenerator {
         }
     }
 
-    private void genIntLit(IntLiteral intLiteral){
-        if(new Register(firstFree).isFreeUse()){
-            output.emitInstruction("add", new Register(0), intLiteral.value, "");
+    private Register genIntLit(IntLiteral intLiteral, Register register){
+        if( register.isFreeUse()){
+            output.emitInstruction("add", register, new Register(0), intLiteral.value);
         }
+        return register;
     }
 
     /**

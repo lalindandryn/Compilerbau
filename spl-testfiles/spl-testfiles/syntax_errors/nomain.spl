@@ -1,13 +1,12 @@
-type a = int;
-type b = array [2] of array [2] of int;
-type c = array [2] of int;
-type d = a;
-proc testmissmatch( x: int, y: int, z: int){}
+proc test( x: int, y: int, ref z: int){
+   z := x + y;
+}
+
 proc main(){
-   var x: d;
-   var y: b;
+   var x: int;
+   var y: int;
    var z: int;
    x := 1;
-   z := 2;
-   y[1][0][3] := z;
+   y := 2;
+   test(x, y, z);
 }
