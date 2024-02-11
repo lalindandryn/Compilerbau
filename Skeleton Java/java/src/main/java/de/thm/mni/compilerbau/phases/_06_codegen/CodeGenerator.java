@@ -33,7 +33,8 @@ public class CodeGenerator {
     }
 
     private SymbolTable globalTable, localTable;
-    private int firstFree = 8, lastFree = 9;
+    private Register register = Register.FIRST_FREE_USE;
+    private int labelCounter = 0;
 
     public void generateCode(Program program, SymbolTable table) {
         assemblerProlog();
@@ -61,7 +62,7 @@ public class CodeGenerator {
                     //Clean current procedure's stack
                     output.emitInstruction("ldw", Register.RETURN_ADDRESS, Register.FRAME_POINTER, procedureEntry.stackLayout.oldReturnAddressOffset(), "restore return register");
                     output.emitInstruction("ldw", Register.FRAME_POINTER, Register.STACK_POINTER, procedureEntry.stackLayout.oldFramePointerOffset(), "restore old frame pointer");
-                    output.emitInstruction("add", Register.FRAME_POINTER, Register.FRAME_POINTER, procedureEntry.stackLayout.frameSize(), "release frame");
+                    output.emitInstruction("add", Register.STACK_POINTER, Register.STACK_POINTER, procedureEntry.stackLayout.frameSize(), "release frame");
                     output.emitInstruction("jr", Register.RETURN_ADDRESS, "return");
                 }
                 case TypeDefinition typeDefinition -> {
@@ -80,94 +81,260 @@ public class CodeGenerator {
         Entry entry1 = null, entry2 = null, entry = null;
         switch (statement){
             case AssignStatement assignStatement -> {
-                Register targetReg = Register.FIRST_FREE_USE;
-                Register valueReg = Register.FIRST_FREE_USE.next();
                 switch (assignStatement.target){
                     case ArrayAccess arrayAccess -> {
                     }
                     case NamedVariable namedVariable -> {
                         VariableEntry namedEntry = (VariableEntry) localTable.lookup(namedVariable.name);
-                        if(targetReg.isFreeUse()){
-                            output.emitInstruction("add", targetReg, Register.FRAME_POINTER, namedEntry.offset);
+                        if(register.isFreeUse()){
+                            output.emitInstruction("add", register, Register.FRAME_POINTER, namedEntry.offset);
+                            if(namedEntry.isReference){
+                                output.emitInstruction("ldw", register, register, 0);
+                            }
+                            register = register.next();
+                        }else {
+                            throw SplError.RegisterOverflow();
                         }
                     }
                 }
                 switch (assignStatement.value){
                     case BinaryExpression binaryExpression -> {
-                        genExpr(binaryExpression.leftOperand, firstFree);
-                        firstFree++;
-                        Register rightOP = new Register(firstFree);
-                        if(rightOP.number > lastFree){
-                            throw SplError.RegisterOverflow();
-                        }
-                        genExpr(binaryExpression.rightOperand, firstFree);
-                        firstFree--;
-                        switchOP(binaryExpression.operator, firstFree, rightOP);
+                        genExpr(binaryExpression.leftOperand);
+                        register = register.next();
+
+                        genExpr(binaryExpression.rightOperand);
+                        register = register.previous();
+                        switchOP(binaryExpression.operator, register);
                     }
 
                     case IntLiteral intLiteral -> {
-                        valueReg = genIntLit(intLiteral, valueReg);
+                        genIntLit(intLiteral);
+                    }
+                    case UnaryExpression unaryExpression -> {
+                        genExpr(unaryExpression);
+                    }
+                    case VariableExpression variableExpression -> {
+                        genExpr(variableExpression);
+                    }
+                }
+                output.emitInstruction("stw", register, register.previous(), 0);
+                register = register.previous();
+            }
+            case CallStatement callStatement -> {
+                ProcedureEntry procedureEntry = (ProcedureEntry) localTable.lookup(callStatement.procedureName);
+                int counter = 0;
+                for(var argument : procedureEntry.parameterTypes) {
+
+                    switch (callStatement.arguments.get(counter)){
+                        case BinaryExpression binaryExpression -> {
+                            genExpr(binaryExpression);
+                        }
+                        case IntLiteral intLiteral -> {
+                            genIntLit(intLiteral);
+                        }
+                        case UnaryExpression unaryExpression -> {
+                            genExpr(unaryExpression);
+                        }
+                        case VariableExpression variableExpression -> {
+                            genExpr(variableExpression);
+                        }
+                    }
+                    output.emitInstruction("stw", register, Register.STACK_POINTER, argument.offset, "store argument #" + counter);
+
+                    counter ++;
+                }
+                output.emitInstruction("jal", callStatement.procedureName.toString());
+            }
+            case CompoundStatement compoundStatement -> {
+                genStatement(compoundStatement);
+            }
+            case EmptyStatement emptyStatement -> {
+            }
+            case IfStatement ifStatement -> {
+
+                switch (ifStatement.condition){
+                    case BinaryExpression binaryExpression -> {
+                        genExpr(binaryExpression);
+                    }
+                    case IntLiteral intLiteral -> {
                     }
                     case UnaryExpression unaryExpression -> {
                     }
                     case VariableExpression variableExpression -> {
                     }
                 }
-                output.emitInstruction("stw", valueReg, targetReg, Register.NULL);
-            }
-            case CallStatement callStatement -> {
-            }
-            case CompoundStatement compoundStatement -> {
-            }
-            case EmptyStatement emptyStatement -> {
-            }
-            case IfStatement ifStatement -> {
+                switch (ifStatement.thenPart){
+                    case AssignStatement assignStatement -> {
+                        genStatement(assignStatement);
+                    }
+                    case CallStatement callStatement -> {
+                        genStatement(callStatement);
+                    }
+                    case CompoundStatement compoundStatement -> {
+                        for(var compoundStm : compoundStatement.statements){
+                            genStatement(compoundStm);
+                        }
+
+                    }
+                    case EmptyStatement emptyStatement -> {
+                    }
+                    case IfStatement ifStatement1 -> {
+                        genStatement(ifStatement1);
+                    }
+                    case WhileStatement whileStatement -> {
+                        genStatement(whileStatement);
+                    }
+                }
+                int elseLabel = labelCounter ++;
+                if(!(ifStatement.elsePart instanceof EmptyStatement)){
+                    int thenLabel = labelCounter ++;
+                    //output.emit(String.valueOf(labelCounter));
+                    output.emitInstruction("j", "L" + thenLabel);
+
+                    output.emitLabel("L" + elseLabel);
+
+                    switch (ifStatement.elsePart) {
+                        case AssignStatement assignStatement -> {
+                            genStatement(assignStatement);
+                        }
+                        case CallStatement callStatement -> {
+                            genStatement(callStatement);
+                        }
+                        case CompoundStatement compoundStatement -> {
+                            for(var compoundStm : compoundStatement.statements){
+                                genStatement(compoundStm);
+                            }
+
+                        }
+                        case EmptyStatement emptyStatement -> {
+                        }
+                        case IfStatement ifStatement1 -> {
+                            genStatement(ifStatement1);
+                        }
+                        case WhileStatement whileStatement -> {
+                            genStatement(whileStatement);
+                        }
+                    }
+                    if(!(ifStatement.elsePart instanceof EmptyStatement)){
+                        output.emitLabel("L" + thenLabel);
+                    }
+
+                }else {
+                    output.emitLabel("L" + elseLabel);
+                }
             }
             case WhileStatement whileStatement -> {
+                int branchtrue = labelCounter ++;
+                output.emitLabel("L" + branchtrue);
+                switch (whileStatement.condition){
+                    case BinaryExpression binaryExpression -> {
+                        genExpr(binaryExpression);
+                    }
+                    case IntLiteral intLiteral -> {
+                    }
+                    case UnaryExpression unaryExpression -> {
+                    }
+                    case VariableExpression variableExpression -> {
+                    }
+                }
+                int branchfalse = labelCounter ++;
+                switch (whileStatement.body){
+                    case AssignStatement assignStatement -> {
+                        genStatement(assignStatement);
+                    }
+                    case CallStatement callStatement -> {
+                        genStatement(callStatement);
+                    }
+                    case CompoundStatement compoundStatement -> {
+                        for(var compound : compoundStatement.statements){
+                            genStatement(compound);
+                        }
+                    }
+                    case EmptyStatement emptyStatement -> {
+                    }
+                    case IfStatement ifStatement -> {
+                        genStatement(ifStatement);
+                    }
+                    case WhileStatement whileStatement1 -> {
+                        genStatement(whileStatement1);
+                    }
+                }
+                output.emitInstruction("j", "L" + branchtrue);
+                output.emitLabel("L" + branchfalse);
             }
         }
     }
 
-    private void switchOP(BinaryExpression.Operator operator, int reg, Register rightOP){
+    private void switchOP(BinaryExpression.Operator operator, Register register){
         switch (operator){
-            case BinaryExpression.Operator.ADD -> { output.emitInstruction("add", new Register(reg), new Register(reg), rightOP); }
-            case BinaryExpression.Operator.SUB -> { output.emitInstruction("sub", new Register(reg), new Register(reg), rightOP); }
-            case BinaryExpression.Operator.MUL -> { output.emitInstruction("mul", new Register(reg), new Register(reg), rightOP); }
-            case BinaryExpression.Operator.DIV -> { output.emitInstruction("div", new Register(reg), new Register(reg), rightOP); }
-            case BinaryExpression.Operator.EQU -> { output.emitInstruction("beq", new Register(reg), new Register(reg).next(), "Label"); }
-            case BinaryExpression.Operator.NEQ -> { output.emitInstruction("bne", new Register(reg), new Register(reg).next(), "Label"); }
-            case BinaryExpression.Operator.LSE -> { output.emitInstruction("ble", new Register(reg), new Register(reg).next(), "Label"); }
-            case BinaryExpression.Operator.LST -> { output.emitInstruction("blt", new Register(reg), new Register(reg).next(), "Label"); }
-            case BinaryExpression.Operator.GRE -> { output.emitInstruction("bge", new Register(reg), new Register(reg).next(), "Label"); }
-            case BinaryExpression.Operator.GRT -> { output.emitInstruction("bgt", new Register(reg), new Register(reg).next(), "Label"); }
+            case BinaryExpression.Operator.ADD -> { output.emitInstruction("add", register, register, register.next()); }
+            case BinaryExpression.Operator.SUB -> { output.emitInstruction("sub", register, register, register.next()); }
+            case BinaryExpression.Operator.MUL -> { output.emitInstruction("mul", register, register, register.next()); }
+            case BinaryExpression.Operator.DIV -> { output.emitInstruction("div", register, register, register.next()); }
+            case BinaryExpression.Operator.EQU -> { output.emitInstruction("bne", register, register.next(), "L" + labelCounter); }
+            case BinaryExpression.Operator.NEQ -> { output.emitInstruction("beq", register, register.next(), "L" + labelCounter); }
+            case BinaryExpression.Operator.LSE -> { output.emitInstruction("bgt", register, register.next(), "L" + labelCounter); }
+            case BinaryExpression.Operator.LST -> { output.emitInstruction("bge", register, register.next(), "L" + labelCounter); }
+            case BinaryExpression.Operator.GRE -> { output.emitInstruction("blt", register, register.next(), "L" + labelCounter); }
+            case BinaryExpression.Operator.GRT -> { output.emitInstruction("ble", register, register.next(), "L" + labelCounter); }
         }
     }
 
-    private void genExpr(Expression expression, int reg){
+
+
+    private void genExpr(Expression expression){
         switch (expression){
             case BinaryExpression binaryExpression -> {
-                genExpr(binaryExpression.leftOperand, reg);
-                reg++;
-                Register rightOP = new Register(reg);
-                genExpr(binaryExpression.rightOperand, reg);
-                reg--;
-                switchOP(binaryExpression.operator, reg, rightOP);
+                genExpr(binaryExpression.leftOperand);
+                register = register.next();
+
+                genExpr(binaryExpression.rightOperand);
+                register = register.previous();
+                switchOP(binaryExpression.operator, register);
             }
             case IntLiteral intLiteral -> {
-                //genIntLit(intLiteral);
+                genIntLit(intLiteral);
             }
             case UnaryExpression unaryExpression -> {
+                if( register.isFreeUse()) {
+                    if(unaryExpression.operator == UnaryExpression.Operator.MINUS){
+                        genExpr(unaryExpression.operand);
+                        output.emitInstruction("sub", register, Register.NULL, register);
+                    }else{
+                        throw new UnsupportedOperationException("Unary operator not supported: " + unaryExpression.operator);
+                    }
+
+                }else {
+                    throw SplError.RegisterOverflow();
+                }
             }
             case VariableExpression variableExpression -> {
+                switch (variableExpression.variable){
+                    case ArrayAccess arrayAccess -> {
+                    }
+                    case NamedVariable namedVariable -> {
+                        VariableEntry namedEntry = (VariableEntry) localTable.lookup(namedVariable.name);
+                        if(register.isFreeUse()){
+                            output.emitInstruction("add", register, Register.FRAME_POINTER, namedEntry.offset);
+                            if(!namedEntry.isReference){
+                                output.emitInstruction("ldw", register, register, 0);
+                            }
+
+                        }else {
+                            throw SplError.RegisterOverflow();
+                        }
+                    }
+                }
             }
         }
     }
 
-    private Register genIntLit(IntLiteral intLiteral, Register register){
-        if( register.isFreeUse()){
-            output.emitInstruction("add", register, new Register(0), intLiteral.value);
+    private void genIntLit(IntLiteral intLiteral){
+        if( register.isFreeUse()) {
+            output.emitInstruction("add", register, Register.NULL, intLiteral.value);
+        }else {
+            throw SplError.RegisterOverflow();
         }
-        return register;
     }
 
     /**

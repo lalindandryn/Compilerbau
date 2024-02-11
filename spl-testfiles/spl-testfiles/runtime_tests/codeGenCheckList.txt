@@ -1,0 +1,25 @@
+- assign statement:
+	-binary expression:
+		-intLit			OK
+		-variableExp:
+			-arrayAccess	??
+			-namedVar	OK
+		
+	-intLit				OK
+	-unaryExpr			OK
+	-variableExpr:
+			-arrayAccess	??
+			-namedVar	OK
+
+- call statement: (isReference juga OK)
+	-binary expression:
+		-intLit			OK
+		-variableExp:
+			-arrayAccess	??
+			-namedVar	OK
+		
+	-intLit				OK
+	-unaryExpr			OK
+	-variableExpr:
+			-arrayAccess	??
+			-namedVar	OK

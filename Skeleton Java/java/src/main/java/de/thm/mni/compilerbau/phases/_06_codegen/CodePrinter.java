@@ -49,6 +49,10 @@ class CodePrinter {
         outputFile.printf("\t%s\t%s\t\t; %s\n", opcode, label, comment);
     }
 
+    void emitInstruction(String opcode, String label) {
+        outputFile.printf("\t%s\t%s\n", opcode, label);
+    }
+
     void emitLabel(String label) {
         outputFile.printf("%s:\n", label);
     }
