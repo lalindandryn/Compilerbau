@@ -1,8 +1,8 @@
-Acker.spl----------------------> passed -> absyn + table + semant + vars
+Acker.spl----------------------> passed -> absyn + table + semant + vars + codegen
 bigtest.spl--------------------> passed -> absyn - table - Err108 + vars
 bits.spl-----------------------> passed -> absyn + table + semant + vars
 compound_literals.spl----------> FOR BONUS TEST
-drawTest.spl-------------------> passed -> absyn + table + semant + vars
+drawTest.spl-------------------> passed -> absyn + table + semant + vars + codegen
 fak.spl------------------------> passed -> absyn + table + semant + vars
 gcd.spl------------------------> passed -> absyn + table + semant + vars
 gol.spl------------------------> passed -> absyn + table + semant + vars
@@ -28,3 +28,5 @@ test9.spl----------------------> passed -> absyn + table + semant + vars
 threedim.spl-------------------> passed -> absyn + table + semant + vars
 twodim.spl---------------------> passed -> absyn + table
 value_semantics.spl------------> FOR BONUS TEST
+
+time --------------------------> codegen

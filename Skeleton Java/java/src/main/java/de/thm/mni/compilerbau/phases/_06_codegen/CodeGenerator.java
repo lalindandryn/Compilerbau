@@ -2,10 +2,8 @@ package de.thm.mni.compilerbau.phases._06_codegen;
 
 import de.thm.mni.compilerbau.CommandLineOptions;
 import de.thm.mni.compilerbau.absyn.*;
-import de.thm.mni.compilerbau.table.Entry;
-import de.thm.mni.compilerbau.table.ProcedureEntry;
-import de.thm.mni.compilerbau.table.SymbolTable;
-import de.thm.mni.compilerbau.table.VariableEntry;
+import de.thm.mni.compilerbau.table.*;
+import de.thm.mni.compilerbau.types.ArrayType;
 import de.thm.mni.compilerbau.utils.NotImplemented;
 import de.thm.mni.compilerbau.utils.SplError;
 import java_cup.runtime.Symbol;
@@ -83,6 +81,36 @@ public class CodeGenerator {
             case AssignStatement assignStatement -> {
                 switch (assignStatement.target){
                     case ArrayAccess arrayAccess -> {
+                        switch (arrayAccess.array){
+                            case ArrayAccess access -> {
+                            }
+                            case NamedVariable namedVariable -> {
+                                VariableEntry namedEntry = (VariableEntry) localTable.lookup(namedVariable.name);
+                                output.emitInstruction("add", register, Register.FRAME_POINTER, namedEntry.offset);
+                            }
+                        }
+                        register = register.next();
+                        switch (arrayAccess.index){
+                            case BinaryExpression binaryExpression -> {
+                                genExpr(binaryExpression);
+                            }
+                            case IntLiteral intLiteral -> {
+                                genExpr(intLiteral);
+                            }
+                            case UnaryExpression unaryExpression -> {
+                                genExpr(unaryExpression);
+                            }
+                            case VariableExpression variableExpression -> {
+                                genExpr(variableExpression);
+                            }
+                        }
+                        register = register.next();
+                        //output.emitInstruction("add", register, Register.NULL, ((ArrayType)arrayAccess.array.).arraySize); // mesti nyari besar dari arraynya TODO!
+                        output.emitInstruction("bgeu", register.previous(), register, "_indexError");
+                        register = register.previous();
+                        output.emitInstruction("mul", register, register, 4);
+                        output.emitInstruction("add", register.previous(), register.previous(), register);
+
                     }
                     case NamedVariable namedVariable -> {
                         VariableEntry namedEntry = (VariableEntry) localTable.lookup(namedVariable.name);
@@ -136,7 +164,7 @@ public class CodeGenerator {
                             genExpr(unaryExpression);
                         }
                         case VariableExpression variableExpression -> {
-                            genExpr(variableExpression);
+                            genExpr2(variableExpression, argument);
                         }
                     }
                     output.emitInstruction("stw", register, Register.STACK_POINTER, argument.offset, "store argument #" + counter);
@@ -314,9 +342,61 @@ public class CodeGenerator {
                     }
                     case NamedVariable namedVariable -> {
                         VariableEntry namedEntry = (VariableEntry) localTable.lookup(namedVariable.name);
+                        //output.emit(String.valueOf(namedEntry.isReference));
                         if(register.isFreeUse()){
                             output.emitInstruction("add", register, Register.FRAME_POINTER, namedEntry.offset);
-                            if(!namedEntry.isReference){
+                            /*if((namedEntry.isReference)){
+                                output.emitInstruction("ldw", register, register, 0);
+                            }*/
+                            output.emitInstruction("ldw", register, register, 0);
+
+                        }else {
+                            throw SplError.RegisterOverflow();
+                        }
+                    }
+                }
+            }
+        }
+    }
+    private void genExpr2(Expression expression, ParameterType argument){
+        switch (expression){
+            case BinaryExpression binaryExpression -> {
+                genExpr(binaryExpression.leftOperand);
+                register = register.next();
+
+                genExpr(binaryExpression.rightOperand);
+                register = register.previous();
+                switchOP(binaryExpression.operator, register);
+            }
+            case IntLiteral intLiteral -> {
+                genIntLit(intLiteral);
+            }
+            case UnaryExpression unaryExpression -> {
+                if( register.isFreeUse()) {
+                    if(unaryExpression.operator == UnaryExpression.Operator.MINUS){
+                        genExpr(unaryExpression.operand);
+                        output.emitInstruction("sub", register, Register.NULL, register);
+                    }else{
+                        throw new UnsupportedOperationException("Unary operator not supported: " + unaryExpression.operator);
+                    }
+
+                }else {
+                    throw SplError.RegisterOverflow();
+                }
+            }
+            case VariableExpression variableExpression -> {
+                switch (variableExpression.variable){
+                    case ArrayAccess arrayAccess -> {
+                    }
+                    case NamedVariable namedVariable -> {
+                        VariableEntry namedEntry = (VariableEntry) localTable.lookup(namedVariable.name);
+                        if(register.isFreeUse()){
+                            output.emitInstruction("add", register, Register.FRAME_POINTER, namedEntry.offset);
+                            if(argument.isReference){
+                                if (namedEntry.isReference){
+                                    output.emitInstruction("ldw", register, register, 0);
+                                }
+                            }else{
                                 output.emitInstruction("ldw", register, register, 0);
                             }
 

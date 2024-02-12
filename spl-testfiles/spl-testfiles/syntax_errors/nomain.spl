@@ -1,12 +1,9 @@
-
+//proc test( x: int, y: int, ref z: int){
+//   z := x + y;
+//}
 
 proc main(){
-   var x: int;
-   var y: int;
-   var z: int;
-   x := 1;
-   while(x # 4) {
-      z := 3;
-      x := x+1;
-   }
+   var x: array [2] of int;
+   x[1] := 1;
+   //test(x + 1, 1, z);
 }
