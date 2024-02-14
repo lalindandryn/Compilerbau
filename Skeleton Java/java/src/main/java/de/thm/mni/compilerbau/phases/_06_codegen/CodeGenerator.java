@@ -4,6 +4,7 @@ import de.thm.mni.compilerbau.CommandLineOptions;
 import de.thm.mni.compilerbau.absyn.*;
 import de.thm.mni.compilerbau.table.*;
 import de.thm.mni.compilerbau.types.ArrayType;
+import de.thm.mni.compilerbau.types.Type;
 import de.thm.mni.compilerbau.utils.NotImplemented;
 import de.thm.mni.compilerbau.utils.SplError;
 import java_cup.runtime.Symbol;
@@ -33,6 +34,7 @@ public class CodeGenerator {
     private SymbolTable globalTable, localTable;
     private Register register = Register.FIRST_FREE_USE;
     private int labelCounter = 0;
+
 
     public void generateCode(Program program, SymbolTable table) {
         assemblerProlog();
@@ -79,16 +81,20 @@ public class CodeGenerator {
         Entry entry1 = null, entry2 = null, entry = null;
         switch (statement){
             case AssignStatement assignStatement -> {
+                Type test = null;
                 switch (assignStatement.target){
                     case ArrayAccess arrayAccess -> {
                         switch (arrayAccess.array){
                             case ArrayAccess access -> {
+                                test = genVar2(access);
                             }
                             case NamedVariable namedVariable -> {
                                 VariableEntry namedEntry = (VariableEntry) localTable.lookup(namedVariable.name);
+                                test = namedEntry.type;
                                 output.emitInstruction("add", register, Register.FRAME_POINTER, namedEntry.offset);
                             }
                         }
+
                         register = register.next();
                         switch (arrayAccess.index){
                             case BinaryExpression binaryExpression -> {
@@ -105,11 +111,12 @@ public class CodeGenerator {
                             }
                         }
                         register = register.next();
-                        //output.emitInstruction("add", register, Register.NULL, ((ArrayType)arrayAccess.array.).arraySize); // mesti nyari besar dari arraynya TODO!
+                        output.emitInstruction("add", register, Register.NULL, ((ArrayType)test).arraySize);
                         output.emitInstruction("bgeu", register.previous(), register, "_indexError");
                         register = register.previous();
-                        output.emitInstruction("mul", register, register, 4);
+                        output.emitInstruction("mul", register, register, ((ArrayType)test).baseType.byteSize);
                         output.emitInstruction("add", register.previous(), register.previous(), register);
+                        register = register.previous();
 
                     }
                     case NamedVariable namedVariable -> {
@@ -119,12 +126,13 @@ public class CodeGenerator {
                             if(namedEntry.isReference){
                                 output.emitInstruction("ldw", register, register, 0);
                             }
-                            register = register.next();
+                            //register = register.next();
                         }else {
                             throw SplError.RegisterOverflow();
                         }
                     }
                 }
+                register = register.next();
                 switch (assignStatement.value){
                     case BinaryExpression binaryExpression -> {
                         genExpr(binaryExpression.leftOperand);
@@ -339,17 +347,18 @@ public class CodeGenerator {
             case VariableExpression variableExpression -> {
                 switch (variableExpression.variable){
                     case ArrayAccess arrayAccess -> {
+                        genVar(arrayAccess);
                     }
                     case NamedVariable namedVariable -> {
                         VariableEntry namedEntry = (VariableEntry) localTable.lookup(namedVariable.name);
-                        //output.emit(String.valueOf(namedEntry.isReference));
                         if(register.isFreeUse()){
                             output.emitInstruction("add", register, Register.FRAME_POINTER, namedEntry.offset);
-                            /*if((namedEntry.isReference)){
-                                output.emitInstruction("ldw", register, register, 0);
-                            }*/
                             output.emitInstruction("ldw", register, register, 0);
+                            if(namedEntry.isReference){
+                                output.emitInstruction("ldw", register, register, 0);
+                            }
 
+                            //register = register.next();
                         }else {
                             throw SplError.RegisterOverflow();
                         }
@@ -372,21 +381,16 @@ public class CodeGenerator {
                 genIntLit(intLiteral);
             }
             case UnaryExpression unaryExpression -> {
-                if( register.isFreeUse()) {
-                    if(unaryExpression.operator == UnaryExpression.Operator.MINUS){
-                        genExpr(unaryExpression.operand);
-                        output.emitInstruction("sub", register, Register.NULL, register);
-                    }else{
-                        throw new UnsupportedOperationException("Unary operator not supported: " + unaryExpression.operator);
-                    }
-
-                }else {
-                    throw SplError.RegisterOverflow();
-                }
+                genExpr(unaryExpression);
             }
             case VariableExpression variableExpression -> {
                 switch (variableExpression.variable){
                     case ArrayAccess arrayAccess -> {
+                        genVarCall(arrayAccess, argument);
+                        if(!argument.isReference){
+                            output.emitInstruction("ldw", register, register, 0);
+                        }
+
                     }
                     case NamedVariable namedVariable -> {
                         VariableEntry namedEntry = (VariableEntry) localTable.lookup(namedVariable.name);
@@ -407,6 +411,193 @@ public class CodeGenerator {
                 }
             }
         }
+    }
+    private Type genVarCall(Variable variable, ParameterType argument){
+        Type test = null;
+        switch (variable){
+            case ArrayAccess arrayAccess -> {
+                switch (arrayAccess.array){
+                    case ArrayAccess access -> {
+                        //output.emitInstruction("ldw", register, register, 0);
+                        test = genVarCall(access, argument);
+
+                    }
+                    case NamedVariable namedVariable -> {
+                        VariableEntry namedEntry = (VariableEntry) localTable.lookup(namedVariable.name);
+                        test = namedEntry.type;
+                        output.emitInstruction("add", register, Register.FRAME_POINTER, namedEntry.offset);
+                        if(argument.isReference){
+                            if (namedEntry.isReference){
+                                output.emitInstruction("ldw", register, register, 0);
+                            }
+                        }else{
+                            //output.emitInstruction("ldw", register, register, 0);
+                        }
+                    }
+                }
+
+                register = register.next();
+                switch (arrayAccess.index){
+                    case BinaryExpression binaryExpression -> {
+                        genExpr(binaryExpression);
+                    }
+                    case IntLiteral intLiteral -> {
+                        genExpr(intLiteral);
+                    }
+                    case UnaryExpression unaryExpression -> {
+                        genExpr(unaryExpression);
+                    }
+                    case VariableExpression variableExpression -> {
+                        genExpr(variableExpression);
+                    }
+                }
+                register = register.next();
+                output.emitInstruction("add", register, Register.NULL, ((ArrayType)test).arraySize); // mesti nyari besar dari arraynya TODO!
+                output.emitInstruction("bgeu", register.previous(), register, "_indexError");
+                register = register.previous();
+                output.emitInstruction("mul", register, register, ((ArrayType)test).baseType.byteSize);
+                output.emitInstruction("add", register.previous(), register.previous(), register);
+                register = register.previous();
+
+            }
+            case NamedVariable namedVariable -> {
+                VariableEntry namedEntry = (VariableEntry) localTable.lookup(namedVariable.name);
+                if(register.isFreeUse()){
+                    output.emitInstruction("add", register, Register.FRAME_POINTER, namedEntry.offset);
+                    if(argument.isReference){
+                        if (namedEntry.isReference){
+                            output.emitInstruction("ldw", register, register, 0);
+                        }
+                    }else{
+                        output.emitInstruction("ldw", register, register, 0);
+
+                    }
+
+                }else {
+                    throw SplError.RegisterOverflow();
+                }
+
+            }
+        }
+        return ((ArrayType) test).baseType;
+    }
+
+
+    private Type genVar(Variable variable){
+        Type test = null;
+        switch (variable){
+            case ArrayAccess arrayAccess -> {
+                switch (arrayAccess.array){
+                    case ArrayAccess access -> {
+                        //output.emitInstruction("ldw", register, register, 0);
+                        test = genVar(access);
+
+                    }
+                    case NamedVariable namedVariable -> {
+                        VariableEntry namedEntry = (VariableEntry) localTable.lookup(namedVariable.name);
+                        test = namedEntry.type;
+                        output.emitInstruction("add", register, Register.FRAME_POINTER, namedEntry.offset);
+                        //if(namedEntry.isReference) {
+                            output.emitInstruction("ldw", register, register, 0);
+                        if(namedEntry.isReference){
+                            output.emitInstruction("ldw", register, register, 0);
+                        }
+                        //}
+                    }
+                }
+
+                register = register.next();
+                switch (arrayAccess.index){
+                    case BinaryExpression binaryExpression -> {
+                        genExpr(binaryExpression);
+                    }
+                    case IntLiteral intLiteral -> {
+                        genExpr(intLiteral);
+                    }
+                    case UnaryExpression unaryExpression -> {
+                        genExpr(unaryExpression);
+                    }
+                    case VariableExpression variableExpression -> {
+                        genExpr(variableExpression);
+                    }
+                }
+                register = register.next();
+                output.emitInstruction("add", register, Register.NULL, ((ArrayType)test).arraySize); // mesti nyari besar dari arraynya TODO!
+                output.emitInstruction("bgeu", register.previous(), register, "_indexError");
+                register = register.previous();
+                output.emitInstruction("mul", register, register, ((ArrayType)test).baseType.byteSize);
+                output.emitInstruction("add", register.previous(), register.previous(), register);
+                register = register.previous();
+
+            }
+            case NamedVariable namedVariable -> {
+                VariableEntry namedEntry = (VariableEntry) localTable.lookup(namedVariable.name);
+                if(register.isFreeUse()){
+                    output.emitInstruction("add", register, Register.FRAME_POINTER, namedEntry.offset);
+                    output.emitInstruction("ldw", register, register, 0);
+                    if(namedEntry.isReference){
+                        output.emitInstruction("ldw", register, register, 0);
+                    }
+                }else {
+                    throw SplError.RegisterOverflow();
+                }
+            }
+        }
+        return ((ArrayType) test).baseType;
+    }
+    private Type genVar2(Variable variable){
+        Type test = null;
+        switch (variable){
+            case ArrayAccess arrayAccess -> {
+                switch (arrayAccess.array){
+                    case ArrayAccess access -> {
+                        output.emitInstruction("ldw", register, register, 0);
+                        test = genVar(access);
+
+                    }
+                    case NamedVariable namedVariable -> {
+                        VariableEntry namedEntry = (VariableEntry) localTable.lookup(namedVariable.name);
+                        test = namedEntry.type;
+                        output.emitInstruction("add", register, Register.FRAME_POINTER, namedEntry.offset);
+                        //output.emitInstruction("ldw", register, register, 0);
+                    }
+                }
+
+                register = register.next();
+                switch (arrayAccess.index){
+                    case BinaryExpression binaryExpression -> {
+                        genExpr(binaryExpression);
+                    }
+                    case IntLiteral intLiteral -> {
+                        genExpr(intLiteral);
+                    }
+                    case UnaryExpression unaryExpression -> {
+                        genExpr(unaryExpression);
+                    }
+                    case VariableExpression variableExpression -> {
+                        genExpr(variableExpression);
+                    }
+                }
+                register = register.next();
+                output.emitInstruction("add", register, Register.NULL, ((ArrayType)test).arraySize); // mesti nyari besar dari arraynya TODO!
+                output.emitInstruction("bgeu", register.previous(), register, "_indexError");
+                register = register.previous();
+                output.emitInstruction("mul", register, register, ((ArrayType)test).baseType.byteSize);
+                output.emitInstruction("add", register.previous(), register.previous(), register);
+                register = register.previous();
+
+            }
+            case NamedVariable namedVariable -> {
+                VariableEntry namedEntry = (VariableEntry) localTable.lookup(namedVariable.name);
+                if(register.isFreeUse()){
+                    output.emitInstruction("add", register, Register.FRAME_POINTER, namedEntry.offset);
+                    //output.emitInstruction("ldw", register, register, 0);
+                }else {
+                    throw SplError.RegisterOverflow();
+                }
+            }
+        }
+        return ((ArrayType) test).baseType;
     }
 
     private void genIntLit(IntLiteral intLiteral){

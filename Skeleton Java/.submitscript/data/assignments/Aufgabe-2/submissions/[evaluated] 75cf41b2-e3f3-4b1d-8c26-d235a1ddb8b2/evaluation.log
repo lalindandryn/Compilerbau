@@ -1,0 +1,417 @@
+[2024-02-14 15:44:10.171503] Start of evaluation log for submission '75cf41b2-e3f3-4b1d-8c26-d235a1ddb8b2'.
+[2024-02-14 15:44:10.171823] Team member: ('Andryani', 'Linda Septira', '5345375')
+[2024-02-14 15:44:10.172019] Team member: ('Kirana', 'Yohanes Ranandika', '5310931')
+[2024-02-14 15:44:10.190238] Preparing the sandbox
+[2024-02-14 15:44:11.010144] Unpacking submission in sandbox
+[2024-02-14 15:44:11.495774] Building the test subject
+[2024-02-14 15:44:11.496053] Identified the Java variant.
+[2024-02-14 15:44:11.646031] Building Java solution with maven.
+[2024-02-14 15:44:24.152952] Maven log:
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------< de.thm.mni.compilerbau.spl-reference:spl >--------------
+[INFO] Building spl 0.1
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- jflex-maven-plugin:1.7.0:generate (default) @ spl ---
+[INFO]   generated /home/solution/java/target/generated-sources/jflex/de/thm/mni/compilerbau/phases/_01_scanner/Scanner.java
+[INFO] 
+[INFO] --- cup-maven-plugin:11b-20160615:generate (default) @ spl ---
+Warning : Non terminal "EmptyStmt" was declared but never used
+Warning : *** Shift/Reduce conflict found in state #94
+  between IfStmt ::= IF LPAREN Expr RPAREN Statement (*) 
+  and     IfStmt ::= IF LPAREN Expr RPAREN Statement (*) ELSE Statement 
+  under symbol ELSE
+  Resolved in favor of shifting.
+
+[INFO]   generated /home/solution/java/target/generated-sources/cup/de/thm/mni/compilerbau/phases/_02_03_parser/Parser.java
+[INFO]   generated /home/solution/java/target/generated-sources/cup/de/thm/mni/compilerbau/phases/_02_03_parser/Sym.java
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ spl ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/solution/java/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.10.1:compile (default-compile) @ spl ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 57 source files to /home/solution/java/target/classes
+[INFO] /home/solution/java/target/generated-sources/jflex/de/thm/mni/compilerbau/phases/_01_scanner/Scanner.java: /home/solution/java/target/generated-sources/jflex/de/thm/mni/compilerbau/phases/_01_scanner/Scanner.java uses or overrides a deprecated API that is marked for removal.
+[INFO] /home/solution/java/target/generated-sources/jflex/de/thm/mni/compilerbau/phases/_01_scanner/Scanner.java: Recompile with -Xlint:removal for details.
+[INFO] /home/solution/java/target/generated-sources/cup/de/thm/mni/compilerbau/phases/_02_03_parser/Parser.java: /home/solution/java/target/generated-sources/cup/de/thm/mni/compilerbau/phases/_02_03_parser/Parser.java uses unchecked or unsafe operations.
+[INFO] /home/solution/java/target/generated-sources/cup/de/thm/mni/compilerbau/phases/_02_03_parser/Parser.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ spl ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/solution/java/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.10.1:testCompile (default-testCompile) @ spl ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.12.4:test (default-test) @ spl ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ spl ---
+[INFO] Building jar: /home/solution/java/target/spl.jar
+[INFO] 
+[INFO] --- maven-shade-plugin:3.1.0:shade (default) @ spl ---
+[INFO] Including com.github.vbmacher:java-cup-runtime:jar:11b-20160615 in the shaded jar.
+[INFO] Replacing original artifact with shaded artifact.
+[INFO] Replacing /home/solution/java/target/spl.jar with /home/solution/java/target/spl-0.1-shaded.jar
+[INFO] Dependency-reduced POM written at: /home/solution/java/dependency-reduced-pom.xml
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  9.652 s
+[INFO] Finished at: 2024-02-14T14:44:24Z
+[INFO] ------------------------------------------------------------------------
+[2024-02-14 15:44:24.308482] Beginning evaluation.
+[2024-02-14 15:44:24.308682] Evaluating 101_undefined_procedure.spl with the submitted solution.
+[2024-02-14 15:44:24.745400] Test subject results match (Compiler Failure).
+[2024-02-14 15:44:24.745442] Exit code matches the expected exit code (101).
+[2024-02-14 15:44:24.745468] Test passed.
+[2024-02-14 15:44:24.745483] Running Score: 1/1
+
+[2024-02-14 15:44:24.745506] Evaluating 101_undefined_type.spl with the submitted solution.
+[2024-02-14 15:44:25.142479] Test subject results match (Compiler Failure).
+[2024-02-14 15:44:25.142513] Exit codes do not match. Expected '101', but got '102'.
+[2024-02-14 15:44:25.142559] Output (stdout + stderr) of 'java -jar /home/solution/java/target/spl.jar /home/tests/101_undefined_type.spl /home/temp/101_undefined_type.spl.s' (Limited to 50 lines/10000 characters):
+An error occurred at Line 1, Column 10:
+Identifier 'Char' does not refer to a type.
+[2024-02-14 15:44:25.142599] Test not passed.
+[2024-02-14 15:44:25.142613] Running Score: 1/2
+
+[2024-02-14 15:44:25.142635] Evaluating 101_undefined_variable.spl with the submitted solution.
+[2024-02-14 15:44:25.572731] Test subject results match (Compiler Failure).
+[2024-02-14 15:44:25.572770] Exit code matches the expected exit code (101).
+[2024-02-14 15:44:25.572793] Test passed.
+[2024-02-14 15:44:25.572808] Running Score: 2/3
+
+[2024-02-14 15:44:25.572831] Evaluating 102_not_a_type.spl with the submitted solution.
+[2024-02-14 15:44:26.022484] Test subject results match (Compiler Failure).
+[2024-02-14 15:44:26.022520] Exit code matches the expected exit code (102).
+[2024-02-14 15:44:26.022544] Test passed.
+[2024-02-14 15:44:26.022560] Running Score: 3/4
+
+[2024-02-14 15:44:26.022585] Evaluating 103_redefinition_as_parameter.spl with the submitted solution.
+[2024-02-14 15:44:26.436147] Test subject results match (Compiler Failure).
+[2024-02-14 15:44:26.436182] Exit code matches the expected exit code (103).
+[2024-02-14 15:44:26.436209] Test passed.
+[2024-02-14 15:44:26.436225] Running Score: 4/5
+
+[2024-02-14 15:44:26.436248] Evaluating 103_redefinition_as_procedure.spl with the submitted solution.
+[2024-02-14 15:44:26.851141] Test subject results match (Compiler Failure).
+[2024-02-14 15:44:26.851180] Exit code matches the expected exit code (103).
+[2024-02-14 15:44:26.851202] Test passed.
+[2024-02-14 15:44:26.851217] Running Score: 5/6
+
+[2024-02-14 15:44:26.851240] Evaluating 103_redefinition_as_type.spl with the submitted solution.
+[2024-02-14 15:44:27.244033] Test subject results match (Compiler Failure).
+[2024-02-14 15:44:27.244080] Exit code matches the expected exit code (103).
+[2024-02-14 15:44:27.244123] Test passed.
+[2024-02-14 15:44:27.244150] Running Score: 6/7
+
+[2024-02-14 15:44:27.244180] Evaluating 103_redefinition_as_variable.spl with the submitted solution.
+[2024-02-14 15:44:27.646086] Test subject results match (Compiler Failure).
+[2024-02-14 15:44:27.646123] Exit code matches the expected exit code (103).
+[2024-02-14 15:44:27.646147] Test passed.
+[2024-02-14 15:44:27.646163] Running Score: 7/8
+
+[2024-02-14 15:44:27.646187] Evaluating 104_must_be_reference_parameter.spl with the submitted solution.
+[2024-02-14 15:44:28.058452] Test subject results match (Compiler Failure).
+[2024-02-14 15:44:28.058487] Exit code matches the expected exit code (104).
+[2024-02-14 15:44:28.058510] Test passed.
+[2024-02-14 15:44:28.058526] Running Score: 8/9
+
+[2024-02-14 15:44:28.058551] Evaluating 113_call_of_non_procedure.spl with the submitted solution.
+[2024-02-14 15:44:28.484658] Test subject results match (Compiler Failure).
+[2024-02-14 15:44:28.484695] Exit code matches the expected exit code (113).
+[2024-02-14 15:44:28.484716] Test passed.
+[2024-02-14 15:44:28.484731] Running Score: 9/10
+
+[2024-02-14 15:44:28.484755] Evaluating 114_argument_type_mismatch.spl with the submitted solution.
+[2024-02-14 15:44:28.923108] Test subject results match (Compiler Failure).
+[2024-02-14 15:44:28.923143] Exit code matches the expected exit code (114).
+[2024-02-14 15:44:28.923166] Test passed.
+[2024-02-14 15:44:28.923195] Running Score: 10/11
+
+[2024-02-14 15:44:28.923220] Evaluating 115_argument_must_be_variable.spl with the submitted solution.
+[2024-02-14 15:44:29.345210] Test subject results match (Compiler Failure).
+[2024-02-14 15:44:29.345248] Exit code matches the expected exit code (115).
+[2024-02-14 15:44:29.345269] Test passed.
+[2024-02-14 15:44:29.345284] Running Score: 11/12
+
+[2024-02-14 15:44:29.345307] Evaluating 116_procedure_too_few_arguments.spl with the submitted solution.
+[2024-02-14 15:44:29.758741] Test subject results match (Compiler Failure).
+[2024-02-14 15:44:29.758776] Exit code matches the expected exit code (116).
+[2024-02-14 15:44:29.758798] Test passed.
+[2024-02-14 15:44:29.758814] Running Score: 12/13
+
+[2024-02-14 15:44:29.758838] Evaluating 116_procedure_too_many_arguments.spl with the submitted solution.
+[2024-02-14 15:44:30.206600] Test subject results match (Compiler Failure).
+[2024-02-14 15:44:30.206635] Exit code matches the expected exit code (116).
+[2024-02-14 15:44:30.206659] Test passed.
+[2024-02-14 15:44:30.206677] Running Score: 13/14
+
+[2024-02-14 15:44:30.206701] Evaluating 122_not_a_variable.spl with the submitted solution.
+[2024-02-14 15:44:30.583842] Submission exited with exit code 1, which is not allowed. Allowed: [0, 99, 140, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127]
+[2024-02-14 15:44:30.583895] Output (stdout + stderr) of 'java -jar /home/solution/java/target/spl.jar /home/tests/122_not_a_variable.spl /home/temp/122_not_a_variable.spl.s' (Limited to 50 lines/10000 characters):
+An error occurred: class de.thm.mni.compilerbau.table.ProcedureEntry cannot be cast to class de.thm.mni.compilerbau.table.VariableEntry (de.thm.mni.compilerbau.table.ProcedureEntry and de.thm.mni.compilerbau.table.VariableEntry are in unnamed module of loader 'app')
+java.lang.ClassCastException: class de.thm.mni.compilerbau.table.ProcedureEntry cannot be cast to class de.thm.mni.compilerbau.table.VariableEntry (de.thm.mni.compilerbau.table.ProcedureEntry and de.thm.mni.compilerbau.table.VariableEntry are in unnamed module of loader 'app')
+	at de.thm.mni.compilerbau.phases._04b_semant.ProcedureBodyChecker.checkStatement(ProcedureBodyChecker.java:109)
+	at de.thm.mni.compilerbau.phases._04b_semant.ProcedureBodyChecker.checkStatement(ProcedureBodyChecker.java:78)
+	at de.thm.mni.compilerbau.phases._04b_semant.ProcedureBodyChecker.checkProcedures(ProcedureBodyChecker.java:64)
+	at de.thm.mni.compilerbau.Main.main(Main.java:85)
+[2024-02-14 15:44:30.583969] Test not passed.
+[2024-02-14 15:44:30.583984] Running Score: 13/15
+
+[2024-02-14 15:44:30.584007] Evaluating 123_indexing_non_array.spl with the submitted solution.
+[2024-02-14 15:44:31.047214] Submission exited with exit code 1, which is not allowed. Allowed: [0, 99, 140, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127]
+[2024-02-14 15:44:31.047262] Output (stdout + stderr) of 'java -jar /home/solution/java/target/spl.jar /home/tests/123_indexing_non_array.spl /home/temp/123_indexing_non_array.spl.s' (Limited to 50 lines/10000 characters):
+An error occurred: class de.thm.mni.compilerbau.types.PrimitiveType cannot be cast to class de.thm.mni.compilerbau.types.ArrayType (de.thm.mni.compilerbau.types.PrimitiveType and de.thm.mni.compilerbau.types.ArrayType are in unnamed module of loader 'app')
+java.lang.ClassCastException: class de.thm.mni.compilerbau.types.PrimitiveType cannot be cast to class de.thm.mni.compilerbau.types.ArrayType (de.thm.mni.compilerbau.types.PrimitiveType and de.thm.mni.compilerbau.types.ArrayType are in unnamed module of loader 'app')
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:114)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.generateCode(CodeGenerator.java:59)
+	at de.thm.mni.compilerbau.Main.main(Main.java:95)
+[2024-02-14 15:44:31.047330] Test not passed.
+[2024-02-14 15:44:31.047345] Running Score: 13/16
+
+[2024-02-14 15:44:31.047368] Evaluating 124_indexing_with_non_integer.spl with the submitted solution.
+[2024-02-14 15:44:32.799537] Results do not match. Expected Compiler Failure(124), but got Success(0).
+[2024-02-14 15:44:32.799616] Output (stdout) of 'xvfb-run -a /home/tools/sim -x -l /home/temp/124_indexing_with_non_integer.spl.bin -s 1 -t 0' (Limited to 50 lines/10000 characters):
+SPL/RTS: main() started
+
+SPL/RTS: index out of bounds
+[2024-02-14 15:44:32.799662] Test not passed.
+[2024-02-14 15:44:32.799679] Running Score: 13/17
+
+[2024-02-14 15:44:32.799703] Evaluating 126_main_not_a_procedure.spl with the submitted solution.
+[2024-02-14 15:44:33.222327] Test subject results match (Compiler Failure).
+[2024-02-14 15:44:33.222371] Exit code matches the expected exit code (126).
+[2024-02-14 15:44:33.222397] Test passed.
+[2024-02-14 15:44:33.222413] Running Score: 14/18
+
+[2024-02-14 15:44:33.222436] Evaluating 127_main_must_not_have_parameters.spl with the submitted solution.
+[2024-02-14 15:44:33.587335] Test subject results match (Compiler Failure).
+[2024-02-14 15:44:33.587391] Exit code matches the expected exit code (127).
+[2024-02-14 15:44:33.587419] Test passed.
+[2024-02-14 15:44:33.587434] Running Score: 15/19
+
+[2024-02-14 15:44:33.587457] Evaluating acker.spl with the submitted solution.
+[2024-02-14 15:44:35.239709] Test subject results match (Success).
+[2024-02-14 15:44:35.246817] Outputs match.
+[2024-02-14 15:44:35.247021] Test passed.
+[2024-02-14 15:44:35.247227] Running Score: 16/20
+
+[2024-02-14 15:44:35.247412] Evaluating bigtest.spl with the submitted solution.
+[2024-02-14 15:44:36.120571] Submission exited with exit code 1, which is not allowed. Allowed: [0, 99, 140, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127]
+[2024-02-14 15:44:36.121038] Output (stdout + stderr) of 'java -jar /home/solution/java/target/spl.jar /home/tests/bigtest.spl /home/temp/bigtest.spl.s' (Limited to 50 lines/10000 characters):
+Exception in thread "main" java.lang.StackOverflowError
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:82)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+	at de.thm.mni.compilerbau.phases._06_codegen.CodeGenerator.genStatement(CodeGenerator.java:185)
+[2024-02-14 15:44:36.121478] Test not passed.
+[2024-02-14 15:44:36.121496] Running Score: 16/21
+
+[2024-02-14 15:44:36.121520] Evaluating bits.spl with the submitted solution.
+[2024-02-14 15:44:37.483303] Test subject results match (Success).
+[2024-02-14 15:44:37.488061] Outputs match.
+[2024-02-14 15:44:37.488094] Test passed.
+[2024-02-14 15:44:37.488110] Running Score: 17/22
+
+[2024-02-14 15:44:37.488133] Evaluating gcd.spl with the submitted solution.
+[2024-02-14 15:44:38.849157] Test subject results match (Success).
+[2024-02-14 15:44:38.856084] Outputs match.
+[2024-02-14 15:44:38.856307] Test passed.
+[2024-02-14 15:44:38.856542] Running Score: 18/23
+
+[2024-02-14 15:44:38.856842] Evaluating inttest.spl with the submitted solution.
+[2024-02-14 15:44:40.195528] Test subject results match (Success).
+[2024-02-14 15:44:40.199006] Outputs match.
+[2024-02-14 15:44:40.199204] Test passed.
+[2024-02-14 15:44:40.199377] Running Score: 19/24
+
+[2024-02-14 15:44:40.199636] Evaluating multiply.spl with the submitted solution.
+[2024-02-14 15:44:41.674739] Test subject results match (Success).
+[2024-02-14 15:44:41.681055] Outputs match.
+[2024-02-14 15:44:41.681334] Test passed.
+[2024-02-14 15:44:41.682194] Running Score: 20/25
+
+[2024-02-14 15:44:41.682491] Evaluating partind1.spl with the submitted solution.
+[2024-02-14 15:44:42.101771] Results do not match. Expected Success(0), but got Compiler Failure(114).
+[2024-02-14 15:44:42.101994] Output (stdout + stderr) of 'java -jar /home/solution/java/target/spl.jar /home/tests/partind1.spl /home/temp/partind1.spl.s' (Limited to 50 lines/10000 characters):
+An error occurred at Line 32, Column 8:
+Argument type mismatch in call of procedure 'p'. Argument 1 is expected to have type 'array [7] of int', but has type 'int'.
+[2024-02-14 15:44:42.102041] Test not passed.
+[2024-02-14 15:44:42.102058] Running Score: 20/26
+
+[2024-02-14 15:44:42.102082] Evaluating partind2.spl with the submitted solution.
+[2024-02-14 15:44:42.576867] Results do not match. Expected Success(0), but got Compiler Failure(114).
+[2024-02-14 15:44:42.576913] Output (stdout + stderr) of 'java -jar /home/solution/java/target/spl.jar /home/tests/partind2.spl /home/temp/partind2.spl.s' (Limited to 50 lines/10000 characters):
+An error occurred at Line 43, Column 8:
+Argument type mismatch in call of procedure 'p'. Argument 1 is expected to have type 'array [5] of array [7] of int', but has type 'int'.
+[2024-02-14 15:44:42.576952] Test not passed.
+[2024-02-14 15:44:42.576968] Running Score: 20/27
+
+[2024-02-14 15:44:42.577007] Evaluating swap.spl with the submitted solution.
+[2024-02-14 15:44:43.970433] Test subject results match (Success).
+[2024-02-14 15:44:43.974054] Outputs match.
+[2024-02-14 15:44:43.974273] Test passed.
+[2024-02-14 15:44:43.974491] Running Score: 21/28
+
+[2024-02-14 15:44:43.974791] Evaluating test1.spl with the submitted solution.
+[2024-02-14 15:44:45.281573] Test subject results match (Success).
+[2024-02-14 15:44:45.287072] Outputs match.
+[2024-02-14 15:44:45.287253] Test passed.
+[2024-02-14 15:44:45.287425] Running Score: 22/29
+
+[2024-02-14 15:44:45.287674] Evaluating test2.spl with the submitted solution.
+[2024-02-14 15:44:46.629972] Test subject results match (Success).
+[2024-02-14 15:44:46.633434] Outputs match.
+[2024-02-14 15:44:46.633632] Test passed.
+[2024-02-14 15:44:46.633994] Running Score: 23/30
+
+[2024-02-14 15:44:46.634303] Evaluating test3.spl with the submitted solution.
+[2024-02-14 15:44:48.030887] Test subject results match (Success).
+[2024-02-14 15:44:48.035928] Outputs differ. 'diff'-log (Expected output first, Limited to 50 lines/10000 characters):
+4d3
+< 1
+6d4
+< 3
+8d5
+< 5
+10d6
+< 7
+12a9,12
+> 7
+> 5
+> 3
+> 1
+[2024-02-14 15:44:48.038135] Test not passed.
+[2024-02-14 15:44:48.038334] Running Score: 23/31
+
+[2024-02-14 15:44:48.038609] Evaluating test4.spl with the submitted solution.
+[2024-02-14 15:44:49.403760] Test subject results match (Success).
+[2024-02-14 15:44:49.406517] Outputs match.
+[2024-02-14 15:44:49.406782] Test passed.
+[2024-02-14 15:44:49.406976] Running Score: 24/32
+
+[2024-02-14 15:44:49.407077] Evaluating test5.spl with the submitted solution.
+[2024-02-14 15:44:50.761243] Test subject results match (Success).
+[2024-02-14 15:44:50.765716] Outputs match.
+[2024-02-14 15:44:50.766101] Test passed.
+[2024-02-14 15:44:50.766402] Running Score: 25/33
+
+[2024-02-14 15:44:50.766805] Evaluating test7.spl with the submitted solution.
+[2024-02-14 15:44:52.133449] Test subject results match (Success).
+[2024-02-14 15:44:52.136879] Outputs match.
+[2024-02-14 15:44:52.137082] Test passed.
+[2024-02-14 15:44:52.137290] Running Score: 26/34
+
+[2024-02-14 15:44:52.137584] Evaluating test8.spl with the submitted solution.
+[2024-02-14 15:44:53.539667] Test subject results match (Success).
+[2024-02-14 15:44:53.543185] Outputs match.
+[2024-02-14 15:44:53.543219] Test passed.
+[2024-02-14 15:44:53.543240] Running Score: 27/35
+
+[2024-02-14 15:44:53.543265] Evaluating test9.spl with the submitted solution.
+[2024-02-14 15:44:54.892297] Test subject results match (Success).
+[2024-02-14 15:44:54.897603] Outputs match.
+[2024-02-14 15:44:54.897636] Test passed.
+[2024-02-14 15:44:54.897653] Running Score: 28/36
+
+[2024-02-14 15:44:54.897677] Evaluating threedim.spl with the submitted solution.
+[2024-02-14 15:44:56.348980] Test subject results match (Success).
+[2024-02-14 15:44:56.352799] Outputs differ. 'diff'-log (Expected output first, Limited to 50 lines/10000 characters):
+3,33c3
+< 10000
+< 00000
+< 00000
+< 00000
+< 00000
+< 
+< 00000
+< 01000
+< 00000
+< 00000
+< 00000
+< 
+< 00000
+< 00000
+< 00100
+< 00000
+< 00000
+< 
+< 00000
+< 00000
+< 00000
+< 00010
+< 00000
+< 
+< 00000
+< 00000
+< 00000
+< 00000
+< 00001
+< 
+< SPL/RTS: main() finished
+---
+> SPL/RTS: TLB miss exception
+[2024-02-14 15:44:56.355313] Test not passed.
+[2024-02-14 15:44:56.355603] Running Score: 28/37
+
+[2024-02-14 15:44:56.355646] Evaluating twodim.spl with the submitted solution.
+[2024-02-14 15:44:57.762572] Test subject results match (Success).
+[2024-02-14 15:44:57.766137] Outputs match.
+[2024-02-14 15:44:57.766371] Test passed.
+[2024-02-14 15:44:57.766574] Running Score: 29/38
+
+[2024-02-14 15:44:57.766998] Final score: 29/38 (76%). 
+[2024-02-14 15:44:57.767376] 80% are needed to pass.
+[2024-02-14 15:45:08.014597] You have NOT PASSED this assignment.
+[2024-02-14 15:45:08.014872] You can try again. Deadline: 16.02.2024 23:59
+

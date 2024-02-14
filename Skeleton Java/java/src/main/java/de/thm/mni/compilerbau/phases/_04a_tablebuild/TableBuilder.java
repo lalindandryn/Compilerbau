@@ -44,41 +44,63 @@ public class TableBuilder {
         for(var globalDeclaration: program.definitions){
             switch (globalDeclaration){
                 case ProcedureDefinition procedureDefinition -> {
-                    //This answer is the closest/identic to eco32 for esp. file bigtest.spl
-
-                    /*localTable = new SymbolTable(globalTable);
-                    listOfParams = new ArrayList<>();
-                    for(var parameter: procedureDefinition.parameters){
-                        dataTypeSwitcher(parameter.typeExpression, localTable);
-                        localTable.enter(parameter.name, new VariableEntry(dataType, parameter.isReference));
-                        listOfParams.add(new ParameterType(dataType, parameter.isReference));
-                    }
-
-                    for(var variable: procedureDefinition.variables){
-                        dataTypeSwitcher(variable.typeExpression, localTable);
-                        localTable.enter(variable.name, new VariableEntry(dataType, false));
-                    }
-
-                    globalTable.enter(procedureDefinition.name, new ProcedureEntry(localTable, listOfParams));
-                    printSymbolTableAtEndOfProcedure(procedureDefinition.name, new ProcedureEntry(localTable, listOfParams));*/
-                }
-                case TypeDefinition typeDefinition ->{
-                    dataTypeSwitcher(typeDefinition.typeExpression, globalTable);
-                    globalTable.enter(typeDefinition.name, new TypeEntry(dataType));
-                }
-            }
-        }
-
-        for(var globalDeclaration: program.definitions){
-            // This answer is by the tutor expected one, but it has a bit diff to eco32.
-            switch (globalDeclaration){
-                case ProcedureDefinition procedureDefinition -> {
                     localTable = new SymbolTable(globalTable);
+                    if(localTable.lookup(procedureDefinition.name) != null){ // Error code 103
+                        throw SplError.RedefinitionOfIdentifier(procedureDefinition.position, procedureDefinition.name);
+                    }
                     listOfParams = new ArrayList<>();
                     for(var parameter: procedureDefinition.parameters){
                         dataTypeSwitcher(parameter.typeExpression, localTable);
                         if(!parameter.isReference && dataType instanceof ArrayType){// Error Code 104
                             throw SplError.ParameterMustBeReference(parameter.position, parameter.name, dataType);
+                        }
+                        if(localTable.lookup(parameter.name) != null && ((Entry) localTable.lookup(parameter.name)) instanceof VariableEntry){ // Error code 103
+                            throw SplError.RedefinitionOfIdentifier(parameter.position, parameter.name);
+                        }
+                        localTable.enter(parameter.name, new VariableEntry(dataType, parameter.isReference));
+                        listOfParams.add(new ParameterType(dataType, parameter.isReference));
+                    }
+
+                    for(var variable: procedureDefinition.variables){
+                        if(localTable.lookup(variable.name) != null && ((Entry) localTable.lookup(variable.name)) instanceof VariableEntry){ // Error code 103
+                            throw SplError.RedefinitionOfIdentifier(variable.position, variable.name);
+                        }
+                        dataTypeSwitcher(variable.typeExpression, localTable);
+                        localTable.enter(variable.name, new VariableEntry(dataType, false));
+                    }
+
+                    globalTable.enter(procedureDefinition.name, new ProcedureEntry(localTable, listOfParams));
+                    if(this.options.phaseOption == CommandLineOptions.PhaseOption.TABLES) {
+                        printSymbolTableAtEndOfProcedure(procedureDefinition.name, new ProcedureEntry(localTable, listOfParams));
+                    }
+                }
+                case TypeDefinition typeDefinition ->{
+                    localTable = new SymbolTable(globalTable);
+                        dataTypeSwitcher(typeDefinition.typeExpression, globalTable);
+                    if(localTable.lookup(typeDefinition.name) != null){ // Error code 103
+                        throw SplError.RedefinitionOfIdentifier(typeDefinition.position, typeDefinition.name);
+                    }
+                    globalTable.enter(typeDefinition.name, new TypeEntry(dataType));
+                }
+            }
+        }
+/*
+        for(var globalDeclaration: program.definitions){
+            // This answer is by the tutor expected one, but it has a bit diff to eco32.
+            switch (globalDeclaration){
+                case ProcedureDefinition procedureDefinition -> {
+                    localTable = new SymbolTable(globalTable);
+                    if(localTable.lookup(procedureDefinition.name) != null){ // Error code 103
+                        throw SplError.RedefinitionOfIdentifier(procedureDefinition.position, procedureDefinition.name);
+                    }
+                    listOfParams = new ArrayList<>();
+                    for(var parameter: procedureDefinition.parameters){
+                        dataTypeSwitcher(parameter.typeExpression, localTable);
+                        if(!parameter.isReference && dataType instanceof ArrayType){// Error Code 104
+                            throw SplError.ParameterMustBeReference(parameter.position, parameter.name, dataType);
+                        }
+                        if(localTable.lookup(parameter.name) != null && ((Entry) localTable.lookup(parameter.name)) instanceof VariableEntry){ // Error code 103
+                            throw SplError.RedefinitionOfIdentifier(parameter.position, parameter.name);
                         }
                         localTable.enter(parameter.name, new VariableEntry(dataType, parameter.isReference));
                         listOfParams.add(new ParameterType(dataType, parameter.isReference));
@@ -101,7 +123,7 @@ public class TableBuilder {
                     //empty
                 }
             }
-        }
+        }*/
 
         return globalTable;
     }
@@ -117,8 +139,7 @@ public class TableBuilder {
                 Entry entry = table.lookup(namedTypeExpression.name);
                 if(entry == null){ //Error code 101
                     throw SplError.UndefinedIdentifier(namedTypeExpression.position, namedTypeExpression.name);
-                }
-                if(!(entry instanceof TypeEntry)){ //Error code 102
+                }else if(!(entry instanceof TypeEntry)){ //Error code 102
                     throw SplError.NotAType(namedTypeExpression.position, namedTypeExpression.name);
                 }else if(entry != null){
                     dataType = ((TypeEntry) entry).type;

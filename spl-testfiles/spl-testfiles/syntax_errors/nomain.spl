@@ -1,9 +1,12 @@
-//proc test( x: int, y: int, ref z: int){
-//   z := x + y;
-//}
+type k = int;
+
+proc call(a : int){
+   var z : k;
+   //var j : z;
+}
+
 
 proc main(){
-   var x: array [2] of int;
-   x[1] := 1;
-   //test(x + 1, 1, z);
+   var x: int;
+   int := 1;
 }

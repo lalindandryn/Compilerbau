@@ -102,14 +102,15 @@ public class ProcedureBodyChecker {
             case ArrayAccess arrayAccess -> {
                 targetEntry = arrayAccessEntry(arrayAccess);
                 targetType = getType(arrayAccess);
+
             }
             case NamedVariable namedVariable -> {
                 targetEntry = localTable.lookup(namedVariable.name);
-                targetType = ((VariableEntry) targetEntry).type;
                 if(!(targetEntry instanceof VariableEntry)) {
                     //Error Code 122
                     throw SplError.NotAVariable(namedVariable.position, namedVariable.name);
                 }
+                targetType = ((VariableEntry) targetEntry).type;
             }
         }
         switch (assignStatement.value){
@@ -135,7 +136,12 @@ public class ProcedureBodyChecker {
                     }
                     case NamedVariable namedVariable -> {
                         valueEntry = localTable.lookup(namedVariable.name);
+                        if(!(targetEntry instanceof VariableEntry)) {
+                            //Error Code 122
+                            throw SplError.NotAVariable(namedVariable.position, namedVariable.name);
+                        }
                         valueType = ((VariableEntry) valueEntry).type;
+
                     }
                 }
             }
@@ -187,17 +193,17 @@ public class ProcedureBodyChecker {
     private void checkStatement(CallStatement callStatement){
         //TODO Setengah jadi need code refactor?
         Entry global = globalTable.lookup(callStatement.procedureName), local = localTable.lookup(callStatement.procedureName);
+        if(local == null || global == null){
+            throw SplError.UndefinedIdentifier(callStatement.position, callStatement.procedureName);
+        }else if(local != null && !(local instanceof ProcedureEntry)){ //Error Code 113
+            throw SplError.CallOfNonProcedure(callStatement.position, callStatement.procedureName);
+        }else if(global != null && !(global instanceof ProcedureEntry)){
+            throw SplError.CallOfNonProcedure(callStatement.position, callStatement.procedureName);
+        }
         Iterator<Expression> args = callStatement.arguments.iterator();
         Iterator<ParameterType> params = ((ProcedureEntry) global).parameterTypes.iterator();
         int countArgs = 0, countParams = 0;
         int i = 1;
-        if(local != null && !(local instanceof ProcedureEntry)){ //Error Code 113
-            throw SplError.CallOfNonProcedure(callStatement.position, callStatement.procedureName);
-        }else if(global != null && !(global instanceof ProcedureEntry)){
-            throw SplError.CallOfNonProcedure(callStatement.position, callStatement.procedureName);
-        }else if(local == null || global == null){
-            throw SplError.UndefinedIdentifier(callStatement.position, callStatement.procedureName);
-        }
         while(args.hasNext()){
             args.next();
             countArgs++;
@@ -262,7 +268,9 @@ public class ProcedureBodyChecker {
                         }
                         case NamedVariable namedVariable -> {
                             throw SplError.IfConditionMustBeBoolean(ifStatement.position, ((VariableEntry) localTable.lookup(namedVariable.name)).type);
+
                         }
+
                     }
                 }
             }
@@ -335,6 +343,10 @@ public class ProcedureBodyChecker {
                         if(((VariableEntry)localTable.lookup(namedVariable.name)).type != PrimitiveType.intType){ //Error Code 119
                             throw SplError.OperandTypeMismatch(expression.position, expression.operator, ((VariableEntry)localTable.lookup(namedVariable.name)).type);
                         }
+                        if(!(namedVariable instanceof Variable)) {
+                            //Error Code 122
+                            throw SplError.NotAVariable(namedVariable.position, namedVariable.name);
+                        }
                     }
                 }
             }
@@ -378,6 +390,10 @@ public class ProcedureBodyChecker {
                         type = PrimitiveType.intType;
                     }
                     case NamedVariable namedVariable -> {
+                        if(!(namedVariable instanceof Variable)) {
+                            //Error Code 122
+                            throw SplError.NotAVariable(namedVariable.position, namedVariable.name);
+                        }
                         type = ((VariableEntry) localTable.lookup(namedVariable.name)).type;
                     }
                 }

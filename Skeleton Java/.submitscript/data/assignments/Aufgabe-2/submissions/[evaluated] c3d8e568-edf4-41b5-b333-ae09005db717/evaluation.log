@@ -1,0 +1,71 @@
+[2024-02-14 02:23:49.353201] Start of evaluation log for submission 'c3d8e568-edf4-41b5-b333-ae09005db717'.
+[2024-02-14 02:23:49.353549] Team member: ('Andryani', 'Linda Septira', '5345375')
+[2024-02-14 02:23:49.353750] Team member: ('Kirana', 'Yohanes Ranandika', '5310931')
+[2024-02-14 02:23:49.371497] Preparing the sandbox
+[2024-02-14 02:23:50.072533] Unpacking submission in sandbox
+[2024-02-14 02:23:50.516907] Building the test subject
+[2024-02-14 02:23:50.517184] Identified the Java variant.
+[2024-02-14 02:23:50.653069] Building Java solution with maven.
+[2024-02-14 02:23:57.009624] Maven log:
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------< de.thm.mni.compilerbau.spl-reference:spl >--------------
+[INFO] Building spl 0.1
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- jflex-maven-plugin:1.7.0:generate (default) @ spl ---
+[INFO]   generated /home/solution/java/target/generated-sources/jflex/de/thm/mni/compilerbau/phases/_01_scanner/Scanner.java
+[INFO] 
+[INFO] --- cup-maven-plugin:11b-20160615:generate (default) @ spl ---
+Warning : Non terminal "EmptyStmt" was declared but never used
+Warning : *** Shift/Reduce conflict found in state #94
+  between IfStmt ::= IF LPAREN Expr RPAREN Statement (*) 
+  and     IfStmt ::= IF LPAREN Expr RPAREN Statement (*) ELSE Statement 
+  under symbol ELSE
+  Resolved in favor of shifting.
+
+[INFO]   generated /home/solution/java/target/generated-sources/cup/de/thm/mni/compilerbau/phases/_02_03_parser/Parser.java
+[INFO]   generated /home/solution/java/target/generated-sources/cup/de/thm/mni/compilerbau/phases/_02_03_parser/Sym.java
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ spl ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/solution/java/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.10.1:compile (default-compile) @ spl ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 57 source files to /home/solution/java/target/classes
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /home/solution/java/src/main/java/de/thm/mni/compilerbau/phases/_06_codegen/CodeGenerator.java:[143,34] ';' expected
+[ERROR] /home/solution/java/src/main/java/de/thm/mni/compilerbau/phases/_06_codegen/CodeGenerator.java:[143,51] not a statement
+[ERROR] /home/solution/java/src/main/java/de/thm/mni/compilerbau/phases/_06_codegen/CodeGenerator.java:[143,60] ';' expected
+[ERROR] /home/solution/java/src/main/java/de/thm/mni/compilerbau/phases/_06_codegen/CodeGenerator.java:[143,62] not a statement
+[ERROR] /home/solution/java/src/main/java/de/thm/mni/compilerbau/phases/_06_codegen/CodeGenerator.java:[143,70] ';' expected
+[INFO] 5 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  3.665 s
+[INFO] Finished at: 2024-02-14T01:23:56Z
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.10.1:compile (default-compile) on project spl: Compilation failure: Compilation failure: 
+[ERROR] /home/solution/java/src/main/java/de/thm/mni/compilerbau/phases/_06_codegen/CodeGenerator.java:[143,34] ';' expected
+[ERROR] /home/solution/java/src/main/java/de/thm/mni/compilerbau/phases/_06_codegen/CodeGenerator.java:[143,51] not a statement
+[ERROR] /home/solution/java/src/main/java/de/thm/mni/compilerbau/phases/_06_codegen/CodeGenerator.java:[143,60] ';' expected
+[ERROR] /home/solution/java/src/main/java/de/thm/mni/compilerbau/phases/_06_codegen/CodeGenerator.java:[143,62] not a statement
+[ERROR] /home/solution/java/src/main/java/de/thm/mni/compilerbau/phases/_06_codegen/CodeGenerator.java:[143,70] ';' expected
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+[2024-02-14 02:23:57.009964] Error: 'mvn -B -Djar.finalName=spl -Dstyle.color=never package' failed (Exit code 1)!'
+[2024-02-14 02:23:57.009981] Error: Building the solution failed.
+[2024-02-14 02:23:57.010028] Building the test subject failed.
+[2024-02-14 02:24:07.255693] You have NOT PASSED this assignment.
+[2024-02-14 02:24:07.255972] You can try again. Deadline: 16.02.2024 23:59
+

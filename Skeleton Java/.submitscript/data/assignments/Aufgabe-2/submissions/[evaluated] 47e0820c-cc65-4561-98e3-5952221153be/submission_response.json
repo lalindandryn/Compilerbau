@@ -1,0 +1,23 @@
+{
+    "accepted": true,
+    "immediate_evaluation": true,
+    "log": "[2024-02-14 16:04:35.018902] Received submission 47e0820c-cc65-4561-98e3-5952221153be\n[2024-02-14 16:04:35.020810] Ip: 10.196.117.75\n[2024-02-14 16:04:35.021093] Team members: [('Andryani', 'Linda Septira', '5345375'), ('Kirana', 'Yohanes Ranandika', '5310931')]\n[2024-02-14 16:04:35.241945] Your submission was ACCEPTED for course 'Compilerbau-ws23', assignment 'Aufgabe-2'.\n[2024-02-14 16:04:35.242353] Your submission has the id 47e0820c-cc65-4561-98e3-5952221153be.\n[2024-02-14 16:04:35.243143] It will be evaluated shortly. Please check back soon for your results.\n",
+    "submission": {
+        "authors": [
+            {
+                "first_name": "Linda Septira",
+                "last_name": "Andryani",
+                "matriculation_number": "5345375"
+            },
+            {
+                "first_name": "Yohanes Ranandika",
+                "last_name": "Kirana",
+                "matriculation_number": "5310931"
+            }
+        ],
+        "evaluation_result": null,
+        "id": "47e0820c-cc65-4561-98e3-5952221153be",
+        "timestamp_ns": 1707923075241698253,
+        "upload_log": "[2024-02-14 16:04:35.018902] Received submission 47e0820c-cc65-4561-98e3-5952221153be\n[2024-02-14 16:04:35.020810] Ip: 10.196.117.75\n[2024-02-14 16:04:35.021093] Team members: [('Andryani', 'Linda Septira', '5345375'), ('Kirana', 'Yohanes Ranandika', '5310931')]\n[2024-02-14 16:04:35.241945] Your submission was ACCEPTED for course 'Compilerbau-ws23', assignment 'Aufgabe-2'.\n[2024-02-14 16:04:35.242353] Your submission has the id 47e0820c-cc65-4561-98e3-5952221153be.\n[2024-02-14 16:04:35.243143] It will be evaluated shortly. Please check back soon for your results.\n\n"
+    }
+}
