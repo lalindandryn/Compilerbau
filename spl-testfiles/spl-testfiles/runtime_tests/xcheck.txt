@@ -1,30 +1,30 @@
 Acker.spl----------------------> passed -> absyn + table + semant + vars + codegen
-bigtest.spl--------------------> passed -> absyn - table - Err108 + vars
-bits.spl-----------------------> passed -> absyn + table + semant + vars
+bigtest.spl--------------------> passed -> absyn - table - Err108 + vars (codegen stackoverflow)
+bits.spl-----------------------> passed -> absyn + table + semant + vars (result beda)
 compound_literals.spl----------> FOR BONUS TEST
 drawTest.spl-------------------> passed -> absyn + table + semant + vars + codegen
 fak.spl------------------------> passed -> absyn + table + semant + vars
-gcd.spl------------------------> passed -> absyn + table + semant + vars
+gcd.spl------------------------> passed -> absyn + table + semant + vars + codegen
 gol.spl------------------------> passed -> absyn + table + semant + vars
-inttest.spl--------------------> passed -> absyn + table + semant + vars
+inttest.spl--------------------> passed -> absyn + table + semant + vars + codegen
 lambda.spl---------------------> passed -> absyn + table + semant + vars
 moreRegisters.spl--------------> passed -> absyn + table + semant + vars
-multiply.spl-------------------> passed -> absyn + table + 
-partind1.spl-------------------> passed -> absyn + table + 
-partind2.spl-------------------> passed -> absyn + table + 
+multiply.spl-------------------> passed -> absyn + table +               + codegen
+partind1.spl-------------------> passed -> absyn + table +               (result beda)
+partind2.spl-------------------> passed -> absyn + table + 		 (result beda)
 queens.spl---------------------> passed -> absyn + table + 
 records.spl--------------------> FOR BONUS TEST
 reftest.spl--------------------> passed -> absyn + table + 
 sierpinski.spl-----------------> passed -> absyn + table + 
-swap.spl-----------------------> passed -> absyn + table + 
-test1.spl----------------------> passed -> absyn + table + 
-test2.spl----------------------> passed -> absyn + table + 
-test3.spl----------------------> passed -> absyn + table + 
-test4.spl----------------------> passed -> absyn + table + 
-test5.spl----------------------> passed -> absyn + table + 
-test7.spl----------------------> passed -> absyn + table + 
-test8.spl----------------------> passed -> absyn + table + 
-test9.spl----------------------> passed -> absyn + table + semant + vars
+swap.spl-----------------------> passed -> absyn + table + 		 + codegen
+test1.spl----------------------> passed -> absyn + table + 		 + codegen
+test2.spl----------------------> passed -> absyn + table + 		 + codegen 
+test3.spl----------------------> passed -> absyn + table + 		 (result beda)
+test4.spl----------------------> passed -> absyn + table +  		 (result beda)
+test5.spl----------------------> passed -> absyn + table + 		 + codegen
+test7.spl----------------------> passed -> absyn + table + 		 + codegen
+test8.spl----------------------> passed -> absyn + table + 		 + codegen
+test9.spl----------------------> passed -> absyn + table + semant + vars + codegen
 threedim.spl-------------------> passed -> absyn + table + semant + vars
 twodim.spl---------------------> passed -> absyn + table
 value_semantics.spl------------> FOR BONUS TEST
